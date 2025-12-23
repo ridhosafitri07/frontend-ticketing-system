@@ -8,34 +8,31 @@
 </head>
 <body class="dashboard-body">
     
-    <!-- Navbar / Header dengan info user dan tombol logout -->
+    <!-- Navbar dengan tambahan link History -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
                 <h2>🎫 EventKu</h2>
             </div>
+            <div class="nav-menu">
+                <!-- Link navigasi -->
+                <a href="dashboard.html" class="nav-link active">🏠 Home</a>
+                <a href="riwayat.html" class="nav-link">📜 Riwayat</a>
+            </div>
             <div class="nav-user">
-                <!-- Nama user yang sedang login -->
                 <span id="userName">Loading...</span>
-                <!-- Tombol logout -->
                 <button class="btn-logout" onclick="handleLogout()">Logout</button>
             </div>
         </div>
     </nav>
 
-    <!-- Container utama untuk konten dashboard -->
     <div class="container">
-        
-        <!-- Section header -->
         <div class="dashboard-header">
             <h1>Event & Konser Terbaru</h1>
             <p>Pilih event favorit kamu dan pesan tiketnya sekarang!</p>
         </div>
 
-        <!-- Grid untuk menampilkan card event -->
-        <div class="events-grid" id="eventsGrid">
-            <!-- Card event akan di-generate oleh JavaScript -->
-        </div>
+        <div class="events-grid" id="eventsGrid"></div>
     </div>
 
     <!-- Modal untuk form pemesanan tiket -->

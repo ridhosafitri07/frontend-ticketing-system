@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Transaksi - EventKu</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-body">
+    
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🎫 EventKu</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">🏠 Dashboard</a>
+                <a href="riwayat.html" class="nav-link active">📜 Riwayat</a>
+            </div>
+            <div class="nav-user">
+                <span id="userName">Loading...</span>
+                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Header Riwayat -->
+        <div class="dashboard-header">
+            <h1>📜 Riwayat Transaksi</h1>
+            <p>Semua pemesanan tiket kamu ada di sini</p>
+        </div>
+
+        <!-- Filter Status -->
+        <div class="filter-section">
+            <h3>Filter by Status:</h3>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterByStatus('all')">
+                    Semua (<span id="count-all">0</span>)
+                </button>
+                <button class="filter-btn" onclick="filterByStatus('Pending')">
+                    🟡 Pending (<span id="count-pending">0</span>)
+                </button>
+                <button class="filter-btn" onclick="filterByStatus('Lunas')">
+                    🟢 Lunas (<span id="count-lunas">0</span>)
+                </button>
+                <button class="filter-btn" onclick="filterByStatus('Dibatalkan')">
+                    🔴 Dibatalkan (<span id="count-dibatalkan">0</span>)
+                </button>
+            </div>
+        </div>
+
+        <!-- List Transaksi -->
+        <div id="transactionList"></div>
+
+        <!-- Empty State (jika belum ada transaksi) -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">📭</div>
+            <h3>Belum Ada Transaksi</h3>
+            <p>Kamu belum pernah memesan tiket.</p>
+            <a href="dashboard.html" class="btn-submit">Mulai Pesan Tiket</a>
+        </div>
+    </div>
+
+    <!-- Modal Detail Transaksi -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detail Transaksi</h2>
+                <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div id="detailBody"></div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    
+    <script>
+        // Variabel global untuk filter
+        let currentFilter = 'all';
+        let allBookings = [];
+
+        // ========================================
+        // PROTEKSI HALAMAN
+        // ========================================
+        function checkAuth() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            return JSON.parse(currentUser);
+        }
+
+        // ========================================
+        // LOAD & DISPLAY BOOKINGS
+        // ========================================
+        function loadBookings() {
+            const currentUser = checkAuth();
+            if (!currentUser) return;
+
+            // Ambil semua bookings dari localStorage
+            const allBookingsData = JSON.parse(localStorage.getItem('bookings')) || [];
+            
+            // Filter: hanya ambil booking milik user yang login
+            allBookings = allBookingsData.filter(b => b.userId === currentUser.id);
+
+            // Update counter status
+            updateStatusCount();
+
+            // Tampilkan list transaksi
+            displayBookings(allBookings);
+        }
+
+        // ========================================
+        // UPDATE COUNTER STATUS
+        // ========================================
+        function updateStatusCount() {
+            const countAll = allBookings.length;
+            const countPending = allBookings.filter(b => b.status === 'Pending').length;
+            const countLunas = allBookings.filter(b => b.status === 'Lunas').length;
+            const countDibatalkan = allBookings.filter(b => b.status === 'Dibatalkan').length;
+
+            document.getElementById('count-all').textContent = countAll;
+            document.getElementById('count-pending').textContent = countPending;
+            document.getElementById('count-lunas').textContent = countLunas;
+            document.getElementById('count-dibatalkan').textContent = countDibatalkan;
+        }
+
+        // ========================================
+        // DISPLAY BOOKINGS
+        // ========================================
+        function displayBookings(bookings) {
+            const listContainer = document.getElementById('transactionList');
+            const emptyState = document.getElementById('emptyState');
+
+            // Jika tidak ada booking, tampilkan empty state
+            if (bookings.length === 0) {
+                listContainer.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            // Sembunyikan empty state
+            emptyState.style.display = 'none';
+
+            // Sort by timestamp (terbaru dulu)
+            bookings.sort((a, b) => b.timestamp - a.timestamp);
+
+            // Generate HTML untuk setiap booking
+            listContainer.innerHTML = bookings.map(booking => {
+                // Tentukan warna status
+                let statusColor = '#ffa502'; // Orange untuk Pending
+                let statusIcon = '🟡';
+                
+                if (booking.status === 'Lunas') {
+                    statusColor = '#26de81';
+                    statusIcon = '🟢';
+                } else if (booking.status === 'Dibatalkan') {
+                    statusColor = '#fc5c65';
+                    statusIcon = '🔴';
+                }
+
+                return `
+                    <div class="transaction-card">
+                        <div class="transaction-header">
+                            <div class="transaction-number">
+                                <strong>Booking #${booking.bookingNumber}</strong>
+                                <span class="transaction-date">${booking.bookingDate}</span>
+                            </div>
+                            <div class="transaction-status" style="background: ${statusColor};">
+                                ${statusIcon} ${booking.status}
+                            </div>
+                        </div>
+
+                        <div class="transaction-body">
+                            <div class="transaction-event">
+                                <h3>${booking.eventTitle}</h3>
+                                <p>📅 ${booking.eventDate}</p>
+                                <p>📍 ${booking.eventLocation}</p>
+                            </div>
+
+                            <div class="transaction-details">
+                                <div class="detail-item">
+                                    <span>Jumlah Tiket:</span>
+                                    <strong>${booking.ticketCount} tiket</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>Total Harga:</span>
+                                    <strong style="color: #667eea;">Rp ${booking.totalPrice.toLocaleString('id-ID')}</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>Pembayaran:</span>
+                                    <strong>${getPaymentLabel(booking.paymentMethod)}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="transaction-actions">
+                            <button class="btn-detail" onclick="showDetail('${booking.bookingNumber}')">
+                                📋 Lihat Detail
+                            </button>
+                            ${booking.status === 'Pending' ? `
+                                <button class="btn-bayar" onclick="updateStatus('${booking.bookingNumber}', 'Lunas')">
+                                    💳 Tandai Lunas
+                                </button>
+                                <button class="btn-cancel" onclick="updateStatus('${booking.bookingNumber}', 'Dibatalkan')">
+                                    ❌ Batalkan
+                                </button>
+                            ` : ''}
+                            ${booking.status === 'Lunas' ? `
+                                <button class="btn-print" onclick="printTicket('${booking.bookingNumber}')">
+                                    🖨️ Cetak Tiket
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========================================
+        // FILTER BY STATUS
+        // ========================================
+        function filterByStatus(status) {
+            currentFilter = status;
+
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Filter bookings
+            let filteredBookings = allBookings;
+            if (status !== 'all') {
+                filteredBookings = allBookings.filter(b => b.status === status);
+            }
+
+            // Display filtered bookings
+            displayBookings(filteredBookings);
+        }
+
+        // ========================================
+        // SHOW DETAIL MODAL
+        // ========================================
+        function showDetail(bookingNumber) {
+            // Cari booking berdasarkan booking number
+            const booking = allBookings.find(b => b.bookingNumber === bookingNumber);
+            if (!booking) return;
+
+            // Generate HTML detail
+            const detailHtml = `
+                <div class="detail-content">
+                    <div class="detail-header">
+                        <h3>Booking #${booking.bookingNumber}</h3>
+                        <div class="detail-status" style="background: ${getStatusColor(booking.status)};">
+                            ${getStatusIcon(booking.status)} ${booking.status}
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>📋 Info Pemesanan</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span>Tanggal Booking:</span>
+                                <strong>${booking.bookingDate}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Status:</span>
+                                <strong>${booking.status}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>🎫 Info Event</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span>Nama Event:</span>
+                                <strong>${booking.eventTitle}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Tanggal Event:</span>
+                                <strong>${booking.eventDate}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Lokasi:</span>
+                                <strong>${booking.eventLocation}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>👤 Info Pemesan</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span>Nama:</span>
+                                <strong>${booking.userName}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Email:</span>
+                                <strong>${booking.userEmail}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>No. Telepon:</span>
+                                <strong>${booking.userPhone}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>💰 Info Pembayaran</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span>Jumlah Tiket:</span>
+                                <strong>${booking.ticketCount} tiket</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Harga per Tiket:</span>
+                                <strong>Rp ${booking.pricePerTicket.toLocaleString('id-ID')}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Total Harga:</span>
+                                <strong style="color: #667eea; font-size: 18px;">Rp ${booking.totalPrice.toLocaleString('id-ID')}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Metode Pembayaran:</span>
+                                <strong>${getPaymentLabel(booking.paymentMethod)}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-close-modal" onclick="closeDetailModal()">Tutup</button>
+                </div>
+            `;
+
+            document.getElementById('detailBody').innerHTML = detailHtml;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // ========================================
+        // UPDATE STATUS
+        // ========================================
+        function updateStatus(bookingNumber, newStatus) {
+            const confirmMsg = newStatus === 'Lunas' 
+                ? 'Tandai transaksi ini sebagai Lunas?' 
+                : 'Batalkan transaksi ini?';
+
+            if (!confirm(confirmMsg)) return;
+
+            // Ambil semua bookings
+            let allBookingsData = JSON.parse(localStorage.getItem('bookings')) || [];
+
+            // Update status booking yang dipilih
+            allBookingsData = allBookingsData.map(b => {
+                if (b.bookingNumber === bookingNumber) {
+                    b.status = newStatus;
+                }
+                return b;
+            });
+
+            // Simpan kembali
+            localStorage.setItem('bookings', JSON.stringify(allBookingsData));
+
+            // Reload data
+            loadBookings();
+
+            // Tampilkan notifikasi
+            alert(`✅ Status berhasil diubah menjadi ${newStatus}`);
+        }
+
+        // ========================================
+        // PRINT TICKET (Placeholder - nanti di prioritas 3)
+        // ========================================
+        function printTicket(bookingNumber) {
+            alert('Fitur cetak tiket akan dibuat di step selanjutnya! 🎫\n\nBooking #' + bookingNumber);
+            // Nanti akan kita buat di Prioritas 3
+        }
+
+        // ========================================
+        // HELPER FUNCTIONS
+        // ========================================
+        function getPaymentLabel(method) {
+            const labels = {
+                'transfer': 'Transfer Bank',
+                'ewallet': 'E-Wallet',
+                'cc': 'Kartu Kredit'
+            };
+            return labels[method] || method;
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'Pending': '#ffa502',
+                'Lunas': '#26de81',
+                'Dibatalkan': '#fc5c65'
+            };
+            return colors[status] || '#999';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'Pending': '🟡',
+                'Lunas': '🟢',
+                'Dibatalkan': '🔴'
+            };
+            return icons[status] || '⚪';
+        }
+
+        // ========================================
+        // LOGOUT
+        // ========================================
+        function handleLogout() {
+            if (confirm('Yakin ingin logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ========================================
+        // INISIALISASI
+        // ========================================
+        window.onload = function() {
+            const user = checkAuth();
+            if (user) {
+                document.getElementById('userName').textContent = `Halo, ${user.name}! 👋`;
+                loadBookings();
+            }
+        };
+    </script>
+</body>
+</html>
