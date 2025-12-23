@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - EventKu</title>
+    <!-- Link ke file CSS eksternal -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Container utama untuk form login -->
+    <div class="auth-container">
+        
+        <!-- Logo dan judul website -->
+        <div class="logo">
+            <h1>🎫 EventKu</h1>
+            <p>Pesan Tiket Event & Konser Favoritmu</p>
+        </div>
+
+        <!-- Info box untuk memberitahu user ini adalah demo mode -->
+        <div class="info-box">
+            ℹ️ Demo Mode: Data disimpan sementara di browser
+        </div>
+
+        <!-- Alert box untuk menampilkan pesan error/success -->
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Form Login -->
+        <div class="form-card">
+            <h2>Login</h2>
+            
+            <!-- Form dengan event onsubmit untuk handle login -->
+            <form onsubmit="handleLogin(event)">
+                
+                <!-- Input Email -->
+                <div class="form-group">
+                    <label>Email</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📧</span>
+                        <input 
+                            type="email" 
+                            id="loginEmail" 
+                            placeholder="contoh@email.com" 
+                            required>
+                    </div>
+                </div>
+
+                <!-- Input Password -->
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input 
+                            type="password" 
+                            id="loginPassword" 
+                            placeholder="Masukkan password" 
+                            required>
+                        <!-- Icon mata untuk show/hide password -->
+                        <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+                    </div>
+                </div>
+
+                <!-- Tombol Submit Login -->
+                <button type="submit" class="btn-submit">Login</button>
+            </form>
+
+            <!-- Link ke halaman register -->
+            <div class="form-footer">
+                Belum punya akun? 
+                <a href="register.html">Daftar sekarang</a>
+            </div>
+        </div>
+    </div>
+
+
+    
+
+    <!-- Link ke file JavaScript eksternal -->
+    <script src="js/script.js"></script>
+    
+    <!-- JavaScript khusus untuk halaman login -->
+    <script>
+        // Fungsi untuk handle proses login
+        function handleLogin(event) {
+            event.preventDefault(); // Mencegah form submit default (reload halaman)
+            
+            // Ambil value dari input email dan password
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Ambil data users dari localStorage (database sementara di browser)
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            // Cari user yang emailnya dan passwordnya cocok
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            // Cek apakah user ditemukan
+            if (user) {
+                // Login berhasil!
+                // Simpan data user yang sedang login ke localStorage
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                // Tampilkan pesan sukses
+                showAlert(`✅ Login berhasil! Selamat datang ${user.name}`, 'success');
+                
+                // Redirect ke dashboard setelah 1 detik
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            } else {
+                // Login gagal - email atau password salah
+                showAlert('❌ Email atau password salah!', 'error');
+            }
+        }
+
+        // Cek apakah user sudah login sebelumnya
+        // Kalau sudah login, langsung redirect ke dashboard
+        window.onload = function() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                window.location.href = 'dashboard.html';
+            }
+        };
+    </script>
+</body>
+</html>

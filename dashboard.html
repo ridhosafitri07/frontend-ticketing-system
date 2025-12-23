@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EventKu</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-body">
+    
+    <!-- Navbar / Header dengan info user dan tombol logout -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🎫 EventKu</h2>
+            </div>
+            <div class="nav-user">
+                <!-- Nama user yang sedang login -->
+                <span id="userName">Loading...</span>
+                <!-- Tombol logout -->
+                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container utama untuk konten dashboard -->
+    <div class="container">
+        
+        <!-- Section header -->
+        <div class="dashboard-header">
+            <h1>Event & Konser Terbaru</h1>
+            <p>Pilih event favorit kamu dan pesan tiketnya sekarang!</p>
+        </div>
+
+        <!-- Grid untuk menampilkan card event -->
+        <div class="events-grid" id="eventsGrid">
+            <!-- Card event akan di-generate oleh JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal untuk form pemesanan tiket -->
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <!-- Header modal dengan tombol close -->
+            <div class="modal-header">
+                <h2>Form Pemesanan</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <!-- Body modal akan diisi oleh JavaScript -->
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Link ke file JavaScript -->
+    <script src="js/script.js"></script>
+    
+    <!-- JavaScript khusus untuk halaman dashboard -->
+    <script>
+        // ========================================
+        // DATA EVENT (Simulasi database)
+        // ========================================
+        const events = [
+            {
+                id: 1,
+                title: "Java Jazz Festival 2025",
+                date: "15-17 Maret 2025",
+                location: "JIExpo Kemayoran, Jakarta",
+                price: 750000,
+                icon: "🎵"
+            },
+            {
+                id: 2,
+                title: "Dewa 19 Reunion Concert",
+                date: "5 April 2025",
+                location: "GBK Stadium, Jakarta",
+                price: 500000,
+                icon: "🎸"
+            },
+            {
+                id: 3,
+                title: "Stand Up Comedy Festival",
+                date: "20 April 2025",
+                location: "Balai Sarbini, Jakarta",
+                price: 250000,
+                icon: "😂"
+            },
+            {
+                id: 4,
+                title: "Seminar Teknologi 2025",
+                date: "10 Mei 2025",
+                location: "Gedung ICE BSD, Tangerang",
+                price: 150000,
+                icon: "💻"
+            }
+        ];
+
+        // Object untuk menyimpan jumlah tiket yang dipilih per event
+        const ticketCounts = {};
+        
+        // Inisialisasi ticketCounts untuk setiap event (awalnya 0)
+        events.forEach(event => {
+            ticketCounts[event.id] = 0;
+        });
+
+        // ========================================
+        // PROTEKSI HALAMAN
+        // ========================================
+        // Fungsi untuk cek apakah user sudah login
+        function checkAuth() {
+            const currentUser = localStorage.getItem('currentUser');
+            
+            // Jika belum login, redirect ke halaman login
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return null;
+            }
+            
+            // Jika sudah login, return data user
+            return JSON.parse(currentUser);
+        }
+
+        // ========================================
+        // RENDER EVENT CARDS
+        // ========================================
+        function renderEvents() {
+            const grid = document.getElementById('eventsGrid');
+            
+            // Loop setiap event dan buat HTML card-nya
+            grid.innerHTML = events.map(event => `
+                <div class="event-card">
+                    <!-- Icon event -->
+                    <div class="event-image">${event.icon}</div>
+                    
+                    <!-- Info event -->
+                    <div class="event-info">
+                        <h3 class="event-title">${event.title}</h3>
+                        <p class="event-date">📅 ${event.date}</p>
+                        <p class="event-location">📍 ${event.location}</p>
+                        <p class="event-price">Rp ${event.price.toLocaleString('id-ID')}</p>
+                        
+                        <!-- Selector untuk tambah/kurang jumlah tiket -->
+                        <div class="ticket-selector">
+                            <button onclick="decreaseTicket(${event.id})">-</button>
+                            <span id="count-${event.id}">0</span>
+                            <button onclick="increaseTicket(${event.id})">+</button>
+                            <span style="margin-left: 10px; color: #666;">tiket</span>
+                        </div>
+                        
+                        <!-- Tombol pesan (disabled jika tiket = 0) -->
+                        <button 
+                            class="btn-book" 
+                            id="btn-${event.id}" 
+                            onclick="openBookingForm(${event.id})" 
+                            disabled>
+                            Pesan Sekarang
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ========================================
+        // FUNGSI TICKET SELECTOR
+        // ========================================
+        
+        // Fungsi untuk tambah jumlah tiket
+        function increaseTicket(eventId) {
+            // Maksimal 10 tiket per pemesanan
+            if (ticketCounts[eventId] < 10) {
+                ticketCounts[eventId]++;
+                updateTicketDisplay(eventId);
+            }
+        }
+
+        // Fungsi untuk kurangi jumlah tiket
+        function decreaseTicket(eventId) {
+            // Minimal 0 tiket
+            if (ticketCounts[eventId] > 0) {
+                ticketCounts[eventId]--;
+                updateTicketDisplay(eventId);
+            }
+        }
+
+        // Fungsi untuk update tampilan jumlah tiket & status tombol
+        function updateTicketDisplay(eventId) {
+            // Update angka jumlah tiket
+            document.getElementById(`count-${eventId}`).textContent = ticketCounts[eventId];
+            
+            // Enable/disable tombol pesan berdasarkan jumlah tiket
+            document.getElementById(`btn-${eventId}`).disabled = ticketCounts[eventId] === 0;
+        }
+
+        // ========================================
+        // FUNGSI BOOKING
+        // ========================================
+        
+        // Fungsi untuk buka modal form pemesanan
+        function openBookingForm(eventId) {
+            // Cari data event berdasarkan ID
+            const event = events.find(e => e.id === eventId);
+            const ticketCount = ticketCounts[eventId];
+            const totalPrice = event.price * ticketCount;
+            
+            // Ambil data user yang sedang login
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+            // HTML untuk form pemesanan
+            const formHtml = `
+                <form id="bookingForm" onsubmit="submitBooking(event, ${eventId})">
+                    
+                    <!-- Ringkasan pesanan -->
+                    <div class="order-summary">
+                        <h3>Ringkasan Pesanan</h3>
+                        <div class="summary-item">
+                            <span>Event:</span>
+                            <span>${event.title}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Jumlah Tiket:</span>
+                            <span>${ticketCount} tiket</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Harga per Tiket:</span>
+                            <span>Rp ${event.price.toLocaleString('id-ID')}</span>
+                        </div>
+                        <div class="summary-total">
+                            <span>Total:</span>
+                            <span>Rp ${totalPrice.toLocaleString('id-ID')}</span>
+                        </div>
+                    </div>
+
+                    <!-- Data pemesan (auto fill dari data user) -->
+                    <div class="form-group">
+                        <label>Nama Lengkap</label>
+                        <input type="text" value="${currentUser.name}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" value="${currentUser.email}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>No. Telepon</label>
+                        <input type="tel" value="${currentUser.phone}" readonly>
+                    </div>
+
+                    <!-- Pilih metode pembayaran -->
+                    <div class="form-group">
+                        <label>Metode Pembayaran *</label>
+                        <select id="payment" required>
+                            <option value="">Pilih Metode Pembayaran</option>
+                            <option value="transfer">Transfer Bank</option>
+                            <option value="ewallet">E-Wallet (OVO/GoPay/Dana)</option>
+                            <option value="cc">Kartu Kredit</option>
+                        </select>
+                    </div>
+
+                    <!-- Tombol submit -->
+                    <button type="submit" class="btn-submit">Konfirmasi Pemesanan</button>
+                </form>
+            `;
+
+            // Masukkan HTML ke modal dan tampilkan modal
+            document.getElementById('modalBody').innerHTML = formHtml;
+            document.getElementById('bookingModal').classList.add('active');
+        }
+
+        // Fungsi untuk submit pemesanan
+        function submitBooking(e, eventId) {
+            e.preventDefault(); // Mencegah form reload halaman
+            
+            // Ambil data yang diperlukan
+            const event = events.find(ev => ev.id === eventId);
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const payment = document.getElementById('payment').value;
+            const ticketCount = ticketCounts[eventId];
+            const totalPrice = event.price * ticketCount;
+
+            // Generate nomor booking unik
+            const bookingNumber = 'BK' + Date.now().toString().slice(-8);
+
+            // Label untuk metode pembayaran
+            const paymentLabel = payment === 'transfer' ? 'Transfer Bank' : 
+                                payment === 'ewallet' ? 'E-Wallet' : 'Kartu Kredit';
+
+            // HTML untuk konfirmasi pemesanan berhasil
+            const confirmationHtml = `
+                <div class="confirmation">
+                    <div class="confirmation-icon">✅</div>
+                    <h2>Pemesanan Berhasil!</h2>
+                    <p>Terima kasih telah memesan tiket</p>
+                    
+                    <div class="booking-details">
+                        <p><strong>No. Booking:</strong> ${bookingNumber}</p>
+                        <p><strong>Nama:</strong> ${currentUser.name}</p>
+                        <p><strong>Email:</strong> ${currentUser.email}</p>
+                        <p><strong>Event:</strong> ${event.title}</p>
+                        <p><strong>Jumlah Tiket:</strong> ${ticketCount} tiket</p>
+                        <p><strong>Total Bayar:</strong> Rp ${totalPrice.toLocaleString('id-ID')}</p>
+                        <p><strong>Metode Pembayaran:</strong> ${paymentLabel}</p>
+                    </div>
+
+                    <p style="color: #666; font-size: 14px;">
+                        E-ticket akan dikirim ke email Anda dalam 5 menit.<br>
+                        Silakan lakukan pembayaran sesuai metode yang dipilih.
+                    </p>
+
+                    <button class="btn-close-modal" onclick="closeModalAndReset()">Tutup</button>
+                </div>
+            `;
+
+            // Tampilkan konfirmasi
+            document.getElementById('modalBody').innerHTML = confirmationHtml;
+        }
+
+        // ========================================
+        // FUNGSI MODAL
+        // ========================================
+        
+        // Fungsi untuk tutup modal
+        function closeModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+        }
+
+        // Fungsi untuk tutup modal dan reset jumlah tiket
+        function closeModalAndReset() {
+            closeModal();
+            
+            // Reset semua ticket count ke 0
+            Object.keys(ticketCounts).forEach(key => {
+                ticketCounts[key] = 0;
+            });
+            
+            // Render ulang tampilan event
+            renderEvents();
+        }
+
+        // ========================================
+        // FUNGSI LOGOUT
+        // ========================================
+        function handleLogout() {
+            // Konfirmasi logout
+            if (confirm('Yakin ingin logout?')) {
+                // Hapus data user yang sedang login dari localStorage
+                localStorage.removeItem('currentUser');
+                
+                // Redirect ke halaman login
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ========================================
+        // INISIALISASI SAAT HALAMAN LOAD
+        // ========================================
+        window.onload = function() {
+            // Cek apakah user sudah login (proteksi halaman)
+            const user = checkAuth();
+            
+            if (user) {
+                // Tampilkan nama user di navbar
+                document.getElementById('userName').textContent = `Halo, ${user.name}! 👋`;
+                
+                // Render semua event cards
+                renderEvents();
+            }
+        };
+    </script>
+</body>
+</html>
