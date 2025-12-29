@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya - EventKu</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-body">
+    
+    <!-- ========================================
+         NAVBAR / HEADER
+         Sama seperti di dashboard & riwayat
+         ======================================== -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img">
+                <h2>EventKu</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">
+                    <img src="images/home icon.png" alt="Home" class="nav-icon"> Home
+                </a>
+                <a href="riwayat.html" class="nav-link">
+                    <img src="images/riwayaticon.png" alt="Riwayat" class="nav-icon"> Riwayat
+                </a>
+                <a href="profile.html" class="nav-link active">
+                    <img src="images/profil icon.jpg" alt="Profil" class="nav-icon"> Profil
+                </a>
+            </div>
+            <div class="nav-user">
+                <span id="userName">Loading...</span>
+                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========================================
+         CONTAINER UTAMA
+         ======================================== -->
+    <div class="container">
+        
+        <!-- Header Halaman -->
+        <div class="dashboard-header">
+            <h1>👤 Profil Saya</h1>
+            <p>Kelola informasi akun dan keamanan</p>
+        </div>
+
+        <!-- Grid 2 Kolom: Info Profil & Edit Profil -->
+        <div class="profile-grid">
+            
+            <!-- ========================================
+                 KOLOM KIRI: INFORMASI PROFIL
+                 Tampilkan data user yang sedang login
+                 ======================================== -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <!-- Avatar menggunakan initial nama (huruf pertama) -->
+                        <span id="avatarInitial">?</span>
+                    </div>
+                    <div class="profile-info">
+                        <h2 id="displayName">Loading...</h2>
+                        <p id="displayEmail">Loading...</p>
+                    </div>
+                </div>
+
+                <div class="profile-details">
+                    <h3>📋 Informasi Akun</h3>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Nama Lengkap:</span>
+                        <span class="detail-value" id="profileName">-</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value" id="profileEmail">-</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">No. Telepon:</span>
+                        <span class="detail-value" id="profilePhone">-</span>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Terdaftar Sejak:</span>
+                        <span class="detail-value" id="profileRegistered">-</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Total Transaksi:</span>
+                        <span class="detail-value" id="profileTotalBookings">0 tiket</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================
+                 KOLOM KANAN: EDIT PROFIL & GANTI PASSWORD
+                 Form untuk update data user
+                 ======================================== -->
+            <div class="profile-forms">
+                
+                <!-- FORM 1: EDIT PROFIL -->
+                <div class="profile-card">
+                    <h3>✏️ Edit Profil</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                        Update informasi akun Anda
+                    </p>
+
+                    <form id="editProfileForm" onsubmit="handleUpdateProfile(event)">
+                        <!-- Input Nama -->
+                        <div class="form-group">
+                            <label>Nama Lengkap *</label>
+                            <input type="text" id="editName" placeholder="Nama lengkap" required>
+                        </div>
+
+                        <!-- Input Email -->
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" id="editEmail" placeholder="email@example.com" required>
+                        </div>
+
+                        <!-- Input No. Telepon -->
+                        <div class="form-group">
+                            <label>No. Telepon *</label>
+                            <input type="tel" id="editPhone" placeholder="08123456789" pattern="08[0-9]{8,11}" required>
+                            <small>Format: 08xxxxxxxxxx</small>
+                        </div>
+
+                        <!-- Tombol Submit -->
+                        <button type="submit" class="btn-submit">
+                            💾 Simpan Perubahan
+                        </button>
+                    </form>
+                </div>
+
+                <!-- FORM 2: GANTI PASSWORD -->
+                <div class="profile-card" style="margin-top: 20px;">
+                    <h3>🔒 Ganti Password</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                        Tingkatkan keamanan akun Anda
+                    </p>
+
+                    <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+                        <!-- Input Password Lama -->
+                        <div class="form-group">
+                            <label>Password Lama *</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="oldPassword" placeholder="Password saat ini" required>
+                                <span class="password-toggle" onclick="togglePassword('oldPassword')">👁️</span>
+                            </div>
+                        </div>
+
+                        <!-- Input Password Baru -->
+                        <div class="form-group">
+                            <label>Password Baru *</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="newPassword" placeholder="Password baru" required>
+                                <span class="password-toggle" onclick="togglePassword('newPassword')">👁️</span>
+                            </div>
+                            <small>Minimal 6 karakter</small>
+                        </div>
+
+                        <!-- Input Konfirmasi Password -->
+                        <div class="form-group">
+                            <label>Konfirmasi Password Baru *</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="confirmPassword" placeholder="Ketik ulang password baru" required>
+                                <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Submit -->
+                        <button type="submit" class="btn-submit">
+                            🔐 Update Password
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Import script global -->
+    <script src="js/script.js"></script>
+    
+    <!-- ========================================
+         JAVASCRIPT UNTUK HALAMAN PROFILE
+         ======================================== -->
+    <script>
+        // ========================================
+        // VARIABEL GLOBAL
+        // ========================================
+        let currentUser = null; // User yang sedang login
+
+        // ========================================
+        // PROTEKSI HALAMAN
+        // Cek apakah user sudah login
+        // Kalau belum, redirect ke login page
+        // ========================================
+        function checkAuth() {
+            const userJson = localStorage.getItem('currentUser');
+            
+            // Kalau tidak ada currentUser, berarti belum login
+            if (!userJson) {
+                alert('Anda belum login!');
+                window.location.href = 'index.html';
+                return null;
+            }
+            
+            // Parse JSON string jadi object
+            return JSON.parse(userJson);
+        }
+
+        // ========================================
+        // LOAD DATA PROFIL
+        // Ambil data user dan tampilkan di halaman
+        // ========================================
+        function loadProfile() {
+            // Ambil data user yang login
+            currentUser = checkAuth();
+            if (!currentUser) return;
+
+            // Update navbar dengan nama user
+            document.getElementById('userName').textContent = `Halo, ${currentUser.name}! 👋`;
+
+            // ===== BAGIAN KIRI: Info Profil =====
+            
+            // Avatar (huruf pertama nama)
+            const initial = currentUser.name.charAt(0).toUpperCase();
+            document.getElementById('avatarInitial').textContent = initial;
+            
+            // Nama & Email di header
+            document.getElementById('displayName').textContent = currentUser.name;
+            document.getElementById('displayEmail').textContent = currentUser.email;
+            
+            // Detail informasi
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            document.getElementById('profilePhone').textContent = currentUser.phone;
+            document.getElementById('profileRegistered').textContent = currentUser.registeredAt || 'Tidak diketahui';
+
+            // Hitung total transaksi user
+            const allBookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            const myBookings = allBookings.filter(b => b.userId === currentUser.id);
+            document.getElementById('profileTotalBookings').textContent = `${myBookings.length} transaksi`;
+
+            // ===== BAGIAN KANAN: Form Edit =====
+            
+            // Pre-fill form edit dengan data saat ini
+            document.getElementById('editName').value = currentUser.name;
+            document.getElementById('editEmail').value = currentUser.email;
+            document.getElementById('editPhone').value = currentUser.phone;
+        }
+
+        // ========================================
+        // HANDLE UPDATE PROFILE
+        // Fungsi untuk update nama, email, no HP
+        // ========================================
+        function handleUpdateProfile(e) {
+            e.preventDefault(); // Cegah form reload halaman
+            
+            // Ambil data dari form
+            const newName = document.getElementById('editName').value.trim();
+            const newEmail = document.getElementById('editEmail').value.trim();
+            const newPhone = document.getElementById('editPhone').value.trim();
+
+            // Validasi email format
+            if (!isValidEmail(newEmail)) {
+                alert('⚠️ Format email tidak valid!');
+                return;
+            }
+
+            // Validasi phone format
+            if (!isValidPhone(newPhone)) {
+                alert('⚠️ Format nomor telepon tidak valid!\nContoh: 08123456789');
+                return;
+            }
+
+            // Ambil semua user dari localStorage
+            let allUsers = JSON.parse(localStorage.getItem('users')) || [];
+
+            // Cek apakah email baru sudah dipakai user lain
+            const emailExists = allUsers.find(u => 
+                u.email === newEmail && u.id !== currentUser.id
+            );
+            
+            if (emailExists) {
+                alert('⚠️ Email sudah digunakan oleh user lain!');
+                return;
+            }
+
+            // Update data user di array users
+            allUsers = allUsers.map(user => {
+                if (user.id === currentUser.id) {
+                    // Update data user
+                    user.name = newName;
+                    user.email = newEmail;
+                    user.phone = newPhone;
+                }
+                return user;
+            });
+
+            // Simpan kembali ke localStorage
+            localStorage.setItem('users', JSON.stringify(allUsers));
+
+            // Update juga currentUser yang login
+            currentUser.name = newName;
+            currentUser.email = newEmail;
+            currentUser.phone = newPhone;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            // Update juga data di semua booking user ini (biar konsisten)
+            let allBookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            allBookings = allBookings.map(booking => {
+                if (booking.userId === currentUser.id) {
+                    booking.userName = newName;
+                    booking.userEmail = newEmail;
+                    booking.userPhone = newPhone;
+                }
+                return booking;
+            });
+            localStorage.setItem('bookings', JSON.stringify(allBookings));
+
+            // Tampilkan notifikasi sukses
+            alert('✅ Profil berhasil diupdate!');
+
+            // Reload tampilan profil
+            loadProfile();
+        }
+
+        // ========================================
+        // HANDLE CHANGE PASSWORD
+        // Fungsi untuk ganti password
+        // ========================================
+        function handleChangePassword(e) {
+            e.preventDefault(); // Cegah form reload halaman
+            
+            // Ambil data dari form
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validasi 1: Cek password lama benar atau tidak
+            if (oldPassword !== currentUser.password) {
+                alert('⚠️ Password lama salah!');
+                return;
+            }
+
+            // Validasi 2: Password baru minimal 6 karakter
+            if (newPassword.length < 6) {
+                alert('⚠️ Password baru minimal 6 karakter!');
+                return;
+            }
+
+            // Validasi 3: Password baru dan konfirmasi harus sama
+            if (newPassword !== confirmPassword) {
+                alert('⚠️ Password baru dan konfirmasi tidak cocok!');
+                return;
+            }
+
+            // Validasi 4: Password baru tidak boleh sama dengan password lama
+            if (newPassword === oldPassword) {
+                alert('⚠️ Password baru tidak boleh sama dengan password lama!');
+                return;
+            }
+
+            // Ambil semua user dari localStorage
+            let allUsers = JSON.parse(localStorage.getItem('users')) || [];
+
+            // Update password user
+            allUsers = allUsers.map(user => {
+                if (user.id === currentUser.id) {
+                    user.password = newPassword; // Ganti password
+                }
+                return user;
+            });
+
+            // Simpan kembali ke localStorage
+            localStorage.setItem('users', JSON.stringify(allUsers));
+
+            // Update juga currentUser yang login
+            currentUser.password = newPassword;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            // Tampilkan notifikasi sukses
+            alert('✅ Password berhasil diubah!');
+
+            // Reset form ganti password
+            document.getElementById('changePasswordForm').reset();
+        }
+
+        // ========================================
+        // LOGOUT
+        // Hapus session dan redirect ke login
+        // ========================================
+        function handleLogout() {
+            if (confirm('Yakin ingin logout?')) {
+                // Hapus currentUser dari localStorage
+                localStorage.removeItem('currentUser');
+                
+                // Redirect ke halaman login
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ========================================
+        // INISIALISASI
+        // Jalankan saat halaman selesai load
+        // ========================================
+        window.onload = function() {
+            loadProfile(); // Load dan tampilkan data profil
+        };
+    </script>
+</body>
+</html>

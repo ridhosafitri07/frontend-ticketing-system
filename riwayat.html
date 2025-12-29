@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Transaksi - EventKu</title>
     <link rel="stylesheet" href="css/style.css">
+    
+    <!-- ========================================
+         LIBRARY UNTUK E-TICKET
+         - QRCode.js: Generate QR Code
+         - html2canvas: Capture HTML ke Image
+         - jsPDF: Generate PDF
+         ======================================== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="dashboard-body">
     
@@ -12,11 +22,19 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <h2>🎫 EventKu</h2>
+                <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img">
+                <h2>EventKu</h2>
             </div>
             <div class="nav-menu">
-                <a href="dashboard.html" class="nav-link">🏠 Dashboard</a>
-                <a href="riwayat.html" class="nav-link active">📜 Riwayat</a>
+                <a href="dashboard.html" class="nav-link">
+                    <img src="images/home icon.png" alt="Home" class="nav-icon"> Home
+                </a>
+                <a href="riwayat.html" class="nav-link active">
+                    <img src="images/riwayaticon.png" alt="Riwayat" class="nav-icon"> Riwayat
+                </a>
+                <a href="profile.html" class="nav-link">
+                    <img src="images/profil icon.jpg" alt="Profil" class="nav-icon"> Profil
+                </a>
             </div>
             <div class="nav-user">
                 <span id="userName">Loading...</span>
@@ -71,6 +89,35 @@
                 <button class="close-btn" onclick="closeDetailModal()">&times;</button>
             </div>
             <div id="detailBody"></div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         MODAL E-TICKET
+         Modal untuk preview & download tiket
+         ======================================== -->
+    <div class="modal" id="ticketModal">
+        <div class="modal-content ticket-modal-content">
+            <div class="modal-header">
+                <h2>🎫 E-Ticket Anda</h2>
+                <button class="close-btn" onclick="closeTicketModal()">&times;</button>
+            </div>
+            
+            <!-- Container untuk tiket yang akan di-download -->
+            <div id="ticketContainer"></div>
+
+            <!-- Action Buttons -->
+            <div class="ticket-actions">
+                <button class="btn-download-pdf" onclick="downloadTicketPDF()">
+                    📄 Download PDF
+                </button>
+                <button class="btn-download-image" onclick="downloadTicketImage()">
+                    🖼️ Download Image
+                </button>
+                <button class="btn-close-modal" onclick="closeTicketModal()">
+                    Tutup
+                </button>
+            </div>
         </div>
     </div>
 
@@ -202,16 +249,16 @@
                                 📋 Lihat Detail
                             </button>
                             ${booking.status === 'Pending' ? `
-                                <button class="btn-bayar" onclick="updateStatus('${booking.bookingNumber}', 'Lunas')">
-                                    💳 Tandai Lunas
+                                <button class="btn-upload" onclick="uploadPaymentProof('${booking.bookingNumber}')">
+                                    📤 Upload Bukti Bayar
                                 </button>
                                 <button class="btn-cancel" onclick="updateStatus('${booking.bookingNumber}', 'Dibatalkan')">
                                     ❌ Batalkan
                                 </button>
                             ` : ''}
                             ${booking.status === 'Lunas' ? `
-                                <button class="btn-print" onclick="printTicket('${booking.bookingNumber}')">
-                                    🖨️ Cetak Tiket
+                                <button class="btn-print" onclick="showTicketPreview('${booking.bookingNumber}')">
+                                    🎫 Download E-Ticket
                                 </button>
                             ` : ''}
                         </div>
@@ -330,6 +377,7 @@
                                 <strong>${getPaymentLabel(booking.paymentMethod)}</strong>
                             </div>
                         </div>
+                        ${getPaymentDetailsHTML(booking)}
                     </div>
 
                     <button class="btn-close-modal" onclick="closeDetailModal()">Tutup</button>
@@ -345,14 +393,16 @@
         }
 
         // ========================================
-        // UPDATE STATUS
+        // UPDATE STATUS (HANYA UNTUK BATAL)
         // ========================================
         function updateStatus(bookingNumber, newStatus) {
-            const confirmMsg = newStatus === 'Lunas' 
-                ? 'Tandai transaksi ini sebagai Lunas?' 
-                : 'Batalkan transaksi ini?';
+            // User hanya bisa membatalkan transaksi
+            if (newStatus !== 'Dibatalkan') {
+                alert('⚠️ Aksi tidak diizinkan!');
+                return;
+            }
 
-            if (!confirm(confirmMsg)) return;
+            if (!confirm('Batalkan transaksi ini?')) return;
 
             // Ambil semua bookings
             let allBookingsData = JSON.parse(localStorage.getItem('bookings')) || [];
@@ -372,15 +422,390 @@
             loadBookings();
 
             // Tampilkan notifikasi
-            alert(`✅ Status berhasil diubah menjadi ${newStatus}`);
+            alert(`✅ Transaksi berhasil dibatalkan`);
         }
 
         // ========================================
-        // PRINT TICKET (Placeholder - nanti di prioritas 3)
+        // UPLOAD PAYMENT PROOF
         // ========================================
-        function printTicket(bookingNumber) {
-            alert('Fitur cetak tiket akan dibuat di step selanjutnya! 🎫\n\nBooking #' + bookingNumber);
-            // Nanti akan kita buat di Prioritas 3
+        function uploadPaymentProof(bookingNumber) {
+            // Cari booking
+            const booking = allBookings.find(b => b.bookingNumber === bookingNumber);
+            if (!booking) return;
+
+            // Buat form upload
+            const uploadFormHtml = `
+                <div class="upload-proof-form">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">📤 Upload Bukti Pembayaran</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Booking #${bookingNumber}</p>
+
+                    <form id="uploadForm" onsubmit="submitPaymentProof(event, '${bookingNumber}')">
+                        ${booking.paymentMethod === 'transfer' ? `
+                            <div class="form-group">
+                                <label>Pilih Bank Tujuan *</label>
+                                <select id="uploadBank" required>
+                                    <option value="">-- Pilih Bank --</option>
+                                    <option value="BCA">BCA - 1234567890 (a.n EventKu)</option>
+                                    <option value="Mandiri">Mandiri - 9876543210 (a.n EventKu)</option>
+                                    <option value="BNI">BNI - 5555666677 (a.n EventKu)</option>
+                                    <option value="BRI">BRI - 8888999900 (a.n EventKu)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Nama Pemilik Rekening *</label>
+                                <input type="text" id="uploadAccountName" placeholder="Sesuai rekening" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nomor Rekening *</label>
+                                <input type="text" id="uploadAccountNumber" placeholder="1234567890" pattern="[0-9]+" required>
+                            </div>
+                        ` : booking.paymentMethod === 'ewallet' ? `
+                            <div class="form-group">
+                                <label>Pilih E-Wallet *</label>
+                                <select id="uploadEwallet" required>
+                                    <option value="">-- Pilih E-Wallet --</option>
+                                    <option value="OVO">OVO</option>
+                                    <option value="GoPay">GoPay</option>
+                                    <option value="Dana">Dana</option>
+                                    <option value="ShopeePay">ShopeePay</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Nomor E-Wallet *</label>
+                                <input type="tel" id="uploadEwalletNumber" placeholder="08123456789" pattern="08[0-9]{8,11}" required>
+                            </div>
+                        ` : ''}
+
+                        <div class="form-group">
+                            <label>Upload Bukti Bayar *</label>
+                            <input type="file" id="uploadProofFile" accept="image/*" required>
+                            <small>Format: JPG, PNG (Max 2MB)</small>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Upload Bukti</button>
+                        <button type="button" class="btn-close-modal" onclick="closeDetailModal()" style="margin-top: 10px;">Batal</button>
+                    </form>
+                </div>
+            `;
+
+            document.getElementById('detailBody').innerHTML = uploadFormHtml;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function submitPaymentProof(e, bookingNumber) {
+            e.preventDefault();
+
+            const proofFile = document.getElementById('uploadProofFile').files[0];
+            
+            // Validasi ukuran file
+            if (proofFile && proofFile.size > 2 * 1024 * 1024) {
+                alert('⚠️ Ukuran file terlalu besar! Maksimal 2MB');
+                return;
+            }
+
+            // Baca file sebagai base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Ambil semua bookings
+                let allBookingsData = JSON.parse(localStorage.getItem('bookings')) || [];
+
+                // Update booking dengan payment proof
+                allBookingsData = allBookingsData.map(b => {
+                    if (b.bookingNumber === bookingNumber) {
+                        if (!b.paymentDetails) {
+                            b.paymentDetails = { method: b.paymentMethod };
+                        }
+
+                        // Simpan detail sesuai metode
+                        if (b.paymentMethod === 'transfer') {
+                            b.paymentDetails.bank = document.getElementById('uploadBank').value;
+                            b.paymentDetails.accountName = document.getElementById('uploadAccountName').value;
+                            b.paymentDetails.accountNumber = document.getElementById('uploadAccountNumber').value;
+                        } else if (b.paymentMethod === 'ewallet') {
+                            b.paymentDetails.ewalletType = document.getElementById('uploadEwallet').value;
+                            b.paymentDetails.ewalletNumber = document.getElementById('uploadEwalletNumber').value;
+                        }
+
+                        b.paymentDetails.proofImage = e.target.result;
+                        b.paymentDetails.proofFileName = proofFile.name;
+                        b.paymentDetails.uploadedAt = new Date().toLocaleString('id-ID');
+                    }
+                    return b;
+                });
+
+                // Simpan kembali
+                localStorage.setItem('bookings', JSON.stringify(allBookingsData));
+
+                // Reload dan tutup modal
+                loadBookings();
+                closeDetailModal();
+
+                alert('✅ Bukti pembayaran berhasil diupload!\n\nBukti Anda akan diverifikasi dalam 1x24 jam.');
+            };
+
+            reader.readAsDataURL(proofFile);
+        }
+
+        // ========================================
+        // E-TICKET FUNCTIONS
+        // Fungsi untuk generate & download e-ticket
+        // ========================================
+        
+        /**
+         * SHOW TICKET PREVIEW
+         * Tampilkan modal preview tiket sebelum download
+         * @param {String} bookingNumber - Nomor booking
+         */
+        function showTicketPreview(bookingNumber) {
+            // Cari booking berdasarkan nomor
+            const booking = allBookings.find(b => b.bookingNumber === bookingNumber);
+            if (!booking) {
+                alert('⚠️ Booking tidak ditemukan!');
+                return;
+            }
+
+            // Cek status harus Lunas
+            if (booking.status !== 'Lunas') {
+                alert('⚠️ Hanya tiket yang sudah Lunas yang bisa didownload!');
+                return;
+            }
+
+            // Generate HTML tiket yang cantik
+            const ticketHTML = generateTicketHTML(booking);
+            
+            // Masukkan ke container
+            document.getElementById('ticketContainer').innerHTML = ticketHTML;
+            
+            // Generate QR Code
+            // QR Code berisi: booking number + user name + event title
+            const qrData = `EVENTKUTIX-${booking.bookingNumber}-${booking.userName}-${booking.eventTitle}`;
+            
+            // Hapus QR code lama (kalau ada)
+            document.getElementById('qrcode').innerHTML = '';
+            
+            // Generate QR code baru
+            new QRCode(document.getElementById('qrcode'), {
+                text: qrData,
+                width: 150,
+                height: 150,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+            });
+
+            // Tampilkan modal
+            document.getElementById('ticketModal').classList.add('active');
+        }
+
+        /**
+         * GENERATE TICKET HTML
+         * Buat HTML design tiket yang cantik
+         * @param {Object} booking - Data booking
+         * @returns {String} - HTML string
+         */
+        function generateTicketHTML(booking) {
+            const currentDate = new Date().toLocaleDateString('id-ID');
+            
+            return `
+                <div class="e-ticket" id="eTicket">
+                    <!-- Header Tiket -->
+                    <div class="ticket-header">
+                        <div class="ticket-logo">
+                            <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img-ticket">
+                            <h1>EventKu</h1>
+                            <p>E-Ticket Digital</p>
+                        </div>
+                        <div class="ticket-status">
+                            <span class="status-badge">✓ VERIFIED</span>
+                        </div>
+                    </div>
+
+                    <!-- Event Info -->
+                    <div class="ticket-event-info">
+                        <div class="event-icon-large">${booking.eventIcon || '🎵'}</div>
+                        <h2 class="event-title-large">${booking.eventTitle}</h2>
+                        <p class="event-subtitle">Official E-Ticket</p>
+                    </div>
+
+                    <!-- Ticket Details Grid -->
+                    <div class="ticket-details-grid">
+                        <div class="ticket-detail-item">
+                            <span class="detail-label">📅 Tanggal Event</span>
+                            <span class="detail-value">${booking.eventDate}</span>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <span class="detail-label">📍 Lokasi</span>
+                            <span class="detail-value">${booking.eventLocation}</span>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <span class="detail-label">👤 Nama Pemesan</span>
+                            <span class="detail-value">${booking.userName}</span>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <span class="detail-label">🎫 Jumlah Tiket</span>
+                            <span class="detail-value">${booking.ticketCount} Tiket</span>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <span class="detail-label">💰 Total Bayar</span>
+                            <span class="detail-value">Rp ${booking.totalPrice.toLocaleString('id-ID')}</span>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <span class="detail-label">📧 Email</span>
+                            <span class="detail-value">${booking.userEmail}</span>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="ticket-qr-section">
+                        <div class="qr-wrapper">
+                            <div id="qrcode"></div>
+                        </div>
+                        <div class="qr-info">
+                            <p class="booking-number">Booking #${booking.bookingNumber}</p>
+                            <p class="qr-instruction">Scan QR Code saat masuk venue</p>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="ticket-footer">
+                        <p>Dicetak pada: ${currentDate}</p>
+                        <p class="ticket-notice">⚠️ Tiket ini tidak dapat dipindahtangankan</p>
+                        <p class="ticket-notice">Harap tunjukkan tiket ini beserta identitas diri saat masuk venue</p>
+                    </div>
+
+                    <!-- Decorative Elements -->
+                    <div class="ticket-perforation"></div>
+                </div>
+            `;
+        }
+
+        /**
+         * DOWNLOAD TICKET AS PDF
+         * Download tiket dalam format PDF
+         */
+        async function downloadTicketPDF() {
+            const ticketElement = document.getElementById('eTicket');
+            
+            if (!ticketElement) {
+                alert('⚠️ Tiket belum dimuat!');
+                return;
+            }
+
+            try {
+                // Show loading
+                const oldText = event.target.textContent;
+                event.target.textContent = '⏳ Generating PDF...';
+                event.target.disabled = true;
+
+                // Capture tiket sebagai canvas menggunakan html2canvas
+                const canvas = await html2canvas(ticketElement, {
+                    scale: 2, // Quality tinggi
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+
+                // Convert canvas ke image data
+                const imgData = canvas.toDataURL('image/png');
+
+                // Buat PDF menggunakan jsPDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                // Hitung dimensi untuk fit ke A4
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                // Add image ke PDF
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+                // Download PDF
+                const booking = allBookings.find(b => 
+                    ticketElement.textContent.includes(b.bookingNumber)
+                );
+                const filename = `E-Ticket-${booking.bookingNumber}.pdf`;
+                pdf.save(filename);
+
+                // Reset button
+                event.target.textContent = oldText;
+                event.target.disabled = false;
+
+                alert('✅ Tiket berhasil didownload sebagai PDF!');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('⚠️ Gagal generate PDF. Silakan coba lagi.');
+                event.target.textContent = oldText;
+                event.target.disabled = false;
+            }
+        }
+
+        /**
+         * DOWNLOAD TICKET AS IMAGE
+         * Download tiket dalam format PNG
+         */
+        async function downloadTicketImage() {
+            const ticketElement = document.getElementById('eTicket');
+            
+            if (!ticketElement) {
+                alert('⚠️ Tiket belum dimuat!');
+                return;
+            }
+
+            try {
+                // Show loading
+                const oldText = event.target.textContent;
+                event.target.textContent = '⏳ Generating Image...';
+                event.target.disabled = true;
+
+                // Capture tiket sebagai canvas
+                const canvas = await html2canvas(ticketElement, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+
+                // Convert canvas ke blob
+                canvas.toBlob(function(blob) {
+                    // Create download link
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    
+                    // Get booking number untuk filename
+                    const booking = allBookings.find(b => 
+                        ticketElement.textContent.includes(b.bookingNumber)
+                    );
+                    
+                    link.download = `E-Ticket-${booking.bookingNumber}.png`;
+                    link.href = url;
+                    link.click();
+                    
+                    // Cleanup
+                    URL.revokeObjectURL(url);
+
+                    // Reset button
+                    event.target.textContent = oldText;
+                    event.target.disabled = false;
+
+                    alert('✅ Tiket berhasil didownload sebagai Image!');
+                });
+            } catch (error) {
+                console.error('Error generating image:', error);
+                alert('⚠️ Gagal generate image. Silakan coba lagi.');
+                event.target.textContent = oldText;
+                event.target.disabled = false;
+            }
+        }
+
+        /**
+         * CLOSE TICKET MODAL
+         * Tutup modal tiket
+         */
+        function closeTicketModal() {
+            document.getElementById('ticketModal').classList.remove('active');
+            // Clear QR code
+            document.getElementById('qrcode').innerHTML = '';
         }
 
         // ========================================
@@ -393,6 +818,50 @@
                 'cc': 'Kartu Kredit'
             };
             return labels[method] || method;
+        }
+
+        function getPaymentDetailsHTML(booking) {
+            if (!booking.paymentDetails) return '';
+
+            const details = booking.paymentDetails;
+            let html = '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">';
+            html += '<h5 style="color: #667eea; margin-bottom: 10px;">Detail Pembayaran:</h5>';
+
+            if (details.method === 'transfer' && details.bank) {
+                html += '<div class="detail-grid">';
+                html += `<div class="detail-item"><span>Bank Tujuan:</span><strong>${details.bank}</strong></div>`;
+                html += `<div class="detail-item"><span>Nama Pengirim:</span><strong>${details.accountName}</strong></div>`;
+                html += `<div class="detail-item"><span>No. Rekening:</span><strong>${details.accountNumber}</strong></div>`;
+                if (details.proofImage) {
+                    html += `<div class="detail-item" style="grid-column: 1 / -1;">
+                        <span>Bukti Transfer:</span><br>
+                        <img src="${details.proofImage}" alt="Bukti Transfer" 
+                             style="max-width: 100%; max-height: 300px; margin-top: 10px; border-radius: 8px; border: 1px solid #e0e0e0; cursor: pointer;"
+                             onclick="window.open(this.src, '_blank')">
+                        <br><small style="color: #666;">Klik untuk memperbesar</small>
+                    </div>`;
+                }
+                html += '</div>';
+            } else if (details.method === 'ewallet' && details.ewalletType) {
+                html += '<div class="detail-grid">';
+                html += `<div class="detail-item"><span>E-Wallet:</span><strong>${details.ewalletType}</strong></div>`;
+                html += `<div class="detail-item"><span>Nomor:</span><strong>${details.ewalletNumber}</strong></div>`;
+                if (details.proofImage) {
+                    html += `<div class="detail-item" style="grid-column: 1 / -1;">
+                        <span>Bukti Pembayaran:</span><br>
+                        <img src="${details.proofImage}" alt="Bukti Pembayaran" 
+                             style="max-width: 100%; max-height: 300px; margin-top: 10px; border-radius: 8px; border: 1px solid #e0e0e0; cursor: pointer;"
+                             onclick="window.open(this.src, '_blank')">
+                        <br><small style="color: #666;">Klik untuk memperbesar</small>
+                    </div>`;
+                }
+                html += '</div>';
+            } else if (details.method === 'cc') {
+                html += '<p style="color: #666;">💳 Pembayaran via Kartu Kredit</p>';
+            }
+
+            html += '</div>';
+            return html;
         }
 
         function getStatusColor(status) {

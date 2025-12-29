@@ -8,16 +8,23 @@
 </head>
 <body class="dashboard-body">
     
-    <!-- Navbar dengan tambahan link History -->
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <h2>🎫 EventKu</h2>
+                <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img">
+                <h2>EventKu</h2>
             </div>
             <div class="nav-menu">
-                <!-- Link navigasi -->
-                <a href="dashboard.html" class="nav-link active">🏠 Home</a>
-                <a href="riwayat.html" class="nav-link">📜 Riwayat</a>
+                <a href="dashboard.html" class="nav-link active">
+                    <img src="images/home icon.png" alt="Home" class="nav-icon"> Home
+                </a>
+                <a href="riwayat.html" class="nav-link">
+                    <img src="images/riwayaticon.png" alt="Riwayat" class="nav-icon"> Riwayat
+                </a>
+                <a href="profile.html" class="nav-link">
+                    <img src="images/profil icon.jpg" alt="Profil" class="nav-icon"> Profil
+                </a>
             </div>
             <div class="nav-user">
                 <span id="userName">Loading...</span>
@@ -27,34 +34,115 @@
     </nav>
 
     <div class="container">
+        <!-- ========================================
+             HEADER DASHBOARD
+             ======================================== -->
         <div class="dashboard-header">
             <h1>Event & Konser Terbaru</h1>
             <p>Pilih event favorit kamu dan pesan tiketnya sekarang!</p>
         </div>
 
+        <!-- ========================================
+             FILTER & SEARCH SECTION
+             Section untuk cari & filter event
+             ======================================== -->
+        <div class="filter-search-section">
+            
+            <!-- Search Bar -->
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Cari event berdasarkan nama..." 
+                    onkeyup="applyFilters()">
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-controls">
+                
+                <!-- Filter Kategori -->
+                <div class="filter-group">
+                    <label>📂 Kategori:</label>
+                    <select id="filterCategory" onchange="applyFilters()">
+                        <option value="all">Semua Kategori</option>
+                        <option value="musik">🎵 Musik</option>
+                        <option value="komedi">😂 Komedi</option>
+                        <option value="seminar">💻 Seminar</option>
+                        <option value="kuliner">🍜 Kuliner</option>
+                        <option value="teater">🎭 Teater</option>
+                    </select>
+                </div>
+
+                <!-- Filter Harga -->
+                <div class="filter-group">
+                    <label>💰 Range Harga:</label>
+                    <select id="filterPrice" onchange="applyFilters()">
+                        <option value="all">Semua Harga</option>
+                        <option value="0-100000">< Rp 100.000</option>
+                        <option value="100000-300000">Rp 100.000 - 300.000</option>
+                        <option value="300000-500000">Rp 300.000 - 500.000</option>
+                        <option value="500000-999999999">> Rp 500.000</option>
+                    </select>
+                </div>
+
+                <!-- Sort By -->
+                <div class="filter-group">
+                    <label>🔄 Urutkan:</label>
+                    <select id="sortBy" onchange="applyFilters()">
+                        <option value="default">Default</option>
+                        <option value="price-low">Harga Termurah</option>
+                        <option value="price-high">Harga Termahal</option>
+                        <option value="name-asc">Nama A-Z</option>
+                        <option value="name-desc">Nama Z-A</option>
+                    </select>
+                </div>
+
+                <!-- Reset Button -->
+                <button class="btn-reset-filter" onclick="resetFilters()">
+                    ↻ Reset Filter
+                </button>
+            </div>
+
+            <!-- Result Count -->
+            <div class="result-info">
+                <p id="resultCount">Menampilkan 6 event</p>
+            </div>
+        </div>
+
+        <!-- ========================================
+             GRID EVENTS
+             Tampilan card event
+             ======================================== -->
         <div class="events-grid" id="eventsGrid"></div>
+
+        <!-- Empty State (jika tidak ada hasil) -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">🔍</div>
+            <h3>Tidak Ada Event Ditemukan</h3>
+            <p>Coba ubah filter atau kata kunci pencarian Anda.</p>
+            <button class="btn-submit" onclick="resetFilters()">Reset Filter</button>
+        </div>
     </div>
 
-    <!-- Modal untuk form pemesanan tiket -->
+    <!-- Modal Pemesanan -->
     <div class="modal" id="bookingModal">
         <div class="modal-content">
-            <!-- Header modal dengan tombol close -->
             <div class="modal-header">
                 <h2>Form Pemesanan</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
-            <!-- Body modal akan diisi oleh JavaScript -->
             <div id="modalBody"></div>
         </div>
     </div>
 
-    <!-- Link ke file JavaScript -->
     <script src="js/script.js"></script>
     
-    <!-- JavaScript khusus untuk halaman dashboard -->
     <script>
         // ========================================
-        // DATA EVENT (Simulasi database)
+        // DATA EVENT
+        // Tambahkan field 'category' untuk filter
+        // Tambahkan field 'image' untuk poster event
         // ========================================
         const events = [
             {
@@ -63,7 +151,9 @@
                 date: "15-17 Maret 2025",
                 location: "JIExpo Kemayoran, Jakarta",
                 price: 750000,
-                icon: "🎵"
+                category: "musik", // Kategori untuk filter
+                icon: "🎵",
+                image: "images/bruno mars.jpg" // Path ke gambar poster
             },
             {
                 id: 2,
@@ -71,7 +161,9 @@
                 date: "5 April 2025",
                 location: "GBK Stadium, Jakarta",
                 price: 500000,
-                icon: "🎸"
+                category: "musik",
+                icon: "🎸",
+                image: "images/garna vibe.jpg"
             },
             {
                 id: 3,
@@ -79,7 +171,9 @@
                 date: "20 April 2025",
                 location: "Balai Sarbini, Jakarta",
                 price: 250000,
-                icon: "😂"
+                category: "komedi",
+                icon: "😂",
+                image: "images/nadin amizah.jpg"
             },
             {
                 id: 4,
@@ -87,55 +181,97 @@
                 date: "10 Mei 2025",
                 location: "Gedung ICE BSD, Tangerang",
                 price: 150000,
-                icon: "💻"
+                category: "seminar",
+                icon: "💻",
+                image: "images/nights of beats.jpg"
+            },
+            {
+                id: 5,
+                title: "Festival Kuliner Nusantara",
+                date: "25 Mei 2025",
+                location: "Monas, Jakarta Pusat",
+                price: 50000,
+                category: "kuliner",
+                icon: "🍜",
+                image: "images/sunday.jpg"
+            },
+            {
+                id: 6,
+                title: "Theater Musical Laskar Pelangi",
+                date: "1 Juni 2025",
+                location: "Teater Jakarta",
+                price: 300000,
+                category: "teater",
+                icon: "🎭",
+                image: "images/teater.jpg"
             }
         ];
 
-        // Object untuk menyimpan jumlah tiket yang dipilih per event
-        const ticketCounts = {};
+        // ========================================
+        // VARIABEL GLOBAL
+        // ========================================
         
-        // Inisialisasi ticketCounts untuk setiap event (awalnya 0)
+        // Jumlah tiket per event
+        const ticketCounts = {};
         events.forEach(event => {
             ticketCounts[event.id] = 0;
         });
 
+        // Array untuk menyimpan event yang sedang ditampilkan (hasil filter)
+        let displayedEvents = [...events]; // Copy semua event di awal
+
         // ========================================
         // PROTEKSI HALAMAN
         // ========================================
-        // Fungsi untuk cek apakah user sudah login
         function checkAuth() {
             const currentUser = localStorage.getItem('currentUser');
-            
-            // Jika belum login, redirect ke halaman login
             if (!currentUser) {
                 window.location.href = 'index.html';
                 return null;
             }
-            
-            // Jika sudah login, return data user
             return JSON.parse(currentUser);
         }
 
         // ========================================
-        // RENDER EVENT CARDS
+        // RENDER EVENTS
+        // Tampilkan event di layar (gunakan displayedEvents, bukan events)
         // ========================================
         function renderEvents() {
             const grid = document.getElementById('eventsGrid');
+            const emptyState = document.getElementById('emptyState');
             
-            // Loop setiap event dan buat HTML card-nya
-            grid.innerHTML = events.map(event => `
+            // Cek apakah ada event yang ditampilkan
+            if (displayedEvents.length === 0) {
+                // Tidak ada event, tampilkan empty state
+                grid.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('resultCount').textContent = 'Tidak ada event ditemukan';
+                return;
+            }
+
+            // Sembunyikan empty state
+            emptyState.style.display = 'none';
+
+            // Update result count
+            document.getElementById('resultCount').textContent = 
+                `Menampilkan ${displayedEvents.length} event`;
+
+            // Generate HTML untuk setiap event yang ditampilkan
+            grid.innerHTML = displayedEvents.map(event => `
                 <div class="event-card">
-                    <!-- Icon event -->
-                    <div class="event-image">${event.icon}</div>
+                    <!-- Event Poster/Image -->
+                    <div class="event-poster">
+                        <img src="${event.image}" alt="${event.title}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <!-- Fallback icon jika gambar gagal load -->
+                        <div class="event-icon-fallback" style="display: none;">${event.icon}</div>
+                    </div>
                     
-                    <!-- Info event -->
                     <div class="event-info">
                         <h3 class="event-title">${event.title}</h3>
                         <p class="event-date">📅 ${event.date}</p>
                         <p class="event-location">📍 ${event.location}</p>
                         <p class="event-price">Rp ${event.price.toLocaleString('id-ID')}</p>
                         
-                        <!-- Selector untuk tambah/kurang jumlah tiket -->
                         <div class="ticket-selector">
                             <button onclick="decreaseTicket(${event.id})">-</button>
                             <span id="count-${event.id}">0</span>
@@ -143,7 +279,6 @@
                             <span style="margin-left: 10px; color: #666;">tiket</span>
                         </div>
                         
-                        <!-- Tombol pesan (disabled jika tiket = 0) -->
                         <button 
                             class="btn-book" 
                             id="btn-${event.id}" 
@@ -157,55 +292,146 @@
         }
 
         // ========================================
-        // FUNGSI TICKET SELECTOR
+        // TICKET SELECTOR
         // ========================================
-        
-        // Fungsi untuk tambah jumlah tiket
         function increaseTicket(eventId) {
-            // Maksimal 10 tiket per pemesanan
             if (ticketCounts[eventId] < 10) {
                 ticketCounts[eventId]++;
                 updateTicketDisplay(eventId);
             }
         }
 
-        // Fungsi untuk kurangi jumlah tiket
         function decreaseTicket(eventId) {
-            // Minimal 0 tiket
             if (ticketCounts[eventId] > 0) {
                 ticketCounts[eventId]--;
                 updateTicketDisplay(eventId);
             }
         }
 
-        // Fungsi untuk update tampilan jumlah tiket & status tombol
+        //update angka di layar
         function updateTicketDisplay(eventId) {
-            // Update angka jumlah tiket
             document.getElementById(`count-${eventId}`).textContent = ticketCounts[eventId];
-            
-            // Enable/disable tombol pesan berdasarkan jumlah tiket
             document.getElementById(`btn-${eventId}`).disabled = ticketCounts[eventId] === 0;
         }
 
         // ========================================
-        // FUNGSI BOOKING
+        // FILTER & SEARCH FUNCTIONS
+        // Fungsi untuk filter dan search event
         // ========================================
         
-        // Fungsi untuk buka modal form pemesanan
+        /**
+         * APPLY FILTERS
+         * Fungsi utama yang dipanggil setiap kali filter berubah
+         * Menggabungkan: Search + Filter Kategori + Filter Harga + Sort
+         */
+        function applyFilters() {
+            // 1. Ambil nilai dari semua filter
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('filterCategory').value;
+            const priceFilter = document.getElementById('filterPrice').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            // 2. Mulai dari semua event
+            let filtered = [...events]; // Copy array events
+
+            // 3. FILTER: Berdasarkan Search Query
+            // Cari event yang judulnya mengandung kata yang dicari
+            if (searchQuery !== '') {
+                filtered = filtered.filter(event => 
+                    event.title.toLowerCase().includes(searchQuery) ||
+                    event.location.toLowerCase().includes(searchQuery)
+                );
+            }
+
+            // 4. FILTER: Berdasarkan Kategori
+            if (categoryFilter !== 'all') {
+                filtered = filtered.filter(event => event.category === categoryFilter);
+            }
+
+            // 5. FILTER: Berdasarkan Range Harga
+            if (priceFilter !== 'all') {
+                // Parse range harga (format: "100000-300000")
+                const [minPrice, maxPrice] = priceFilter.split('-').map(Number);
+                
+                filtered = filtered.filter(event => 
+                    event.price >= minPrice && event.price <= maxPrice
+                );
+            }
+
+            // 6. SORT: Urutkan hasil filter
+            filtered = sortEvents(filtered, sortBy);
+
+            // 7. Update displayedEvents dan render ulang
+            displayedEvents = filtered;
+            renderEvents();
+        }
+
+        /**
+         * SORT EVENTS
+         * Fungsi untuk mengurutkan array event
+         * @param {Array} eventsArray - Array event yang mau diurutkan
+         * @param {String} sortType - Tipe sorting
+         * @returns {Array} - Array event yang sudah diurutkan
+         */
+        function sortEvents(eventsArray, sortType) {
+            let sorted = [...eventsArray]; // Copy array
+
+            switch(sortType) {
+                case 'price-low':
+                    // Urutkan dari harga termurah ke termahal
+                    sorted.sort((a, b) => a.price - b.price);
+                    break;
+                
+                case 'price-high':
+                    // Urutkan dari harga termahal ke termurah
+                    sorted.sort((a, b) => b.price - a.price);
+                    break;
+                
+                case 'name-asc':
+                    // Urutkan nama A-Z
+                    sorted.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                
+                case 'name-desc':
+                    // Urutkan nama Z-A
+                    sorted.sort((a, b) => b.title.localeCompare(a.title));
+                    break;
+                
+                default:
+                    // Default: tidak diurutkan (sesuai urutan asli)
+                    break;
+            }
+
+            return sorted;
+        }
+
+        /**
+         * RESET FILTERS
+         * Reset semua filter ke default
+         */
+        function resetFilters() {
+            // Reset semua input filter ke nilai default
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterCategory').value = 'all';
+            document.getElementById('filterPrice').value = 'all';
+            document.getElementById('sortBy').value = 'default';
+
+            // Tampilkan semua event
+            displayedEvents = [...events];
+            renderEvents();
+        }
+
+        // ========================================
+        // BOOKING FORM
+        // ========================================
         function openBookingForm(eventId) {
-            // Cari data event berdasarkan ID
             const event = events.find(e => e.id === eventId);
             const ticketCount = ticketCounts[eventId];
             const totalPrice = event.price * ticketCount;
-            
-            // Ambil data user yang sedang login
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
-            // HTML untuk form pemesanan
             const formHtml = `
                 <form id="bookingForm" onsubmit="submitBooking(event, ${eventId})">
-                    
-                    <!-- Ringkasan pesanan -->
                     <div class="order-summary">
                         <h3>Ringkasan Pesanan</h3>
                         <div class="summary-item">
@@ -226,7 +452,6 @@
                         </div>
                     </div>
 
-                    <!-- Data pemesan (auto fill dari data user) -->
                     <div class="form-group">
                         <label>Nama Lengkap</label>
                         <input type="text" value="${currentUser.name}" readonly>
@@ -242,10 +467,9 @@
                         <input type="tel" value="${currentUser.phone}" readonly>
                     </div>
 
-                    <!-- Pilih metode pembayaran -->
                     <div class="form-group">
                         <label>Metode Pembayaran *</label>
-                        <select id="payment" required>
+                        <select id="payment" required onchange="togglePaymentDetails()">
                             <option value="">Pilih Metode Pembayaran</option>
                             <option value="transfer">Transfer Bank</option>
                             <option value="ewallet">E-Wallet (OVO/GoPay/Dana)</option>
@@ -253,35 +477,263 @@
                         </select>
                     </div>
 
-                    <!-- Tombol submit -->
+                    <!-- Detail Transfer Bank (Hidden by default) -->
+                    <div id="transferDetails" style="display: none;">
+                        <div class="form-group">
+                            <label>Pilih Bank Tujuan *</label>
+                            <select id="bankDestination" required>
+                                <option value="">-- Pilih Bank --</option>
+                                <option value="BCA">BCA - 1234567890 (a.n EventKu)</option>
+                                <option value="Mandiri">Mandiri - 9876543210 (a.n EventKu)</option>
+                                <option value="BNI">BNI - 5555666677 (a.n EventKu)</option>
+                                <option value="BRI">BRI - 8888999900 (a.n EventKu)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nama Pemilik Rekening Pengirim *</label>
+                            <input type="text" id="accountName" placeholder="Masukkan nama sesuai rekening" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nomor Rekening Pengirim *</label>
+                            <input type="text" id="accountNumber" placeholder="Contoh: 1234567890" pattern="[0-9]+" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Upload Bukti Transfer *</label>
+                            <input type="file" id="paymentProof" accept="image/*" required>
+                            <small style="color: #666; font-size: 12px;">Format: JPG, PNG, atau PDF (Max 2MB)</small>
+                        </div>
+                    </div>
+
+                    <!-- Detail E-Wallet -->
+                    <div id="ewalletDetails" style="display: none;">
+                        <div class="form-group">
+                            <label>Pilih E-Wallet *</label>
+                            <select id="ewalletType" required>
+                                <option value="">-- Pilih E-Wallet --</option>
+                                <option value="OVO">OVO - 08123456789</option>
+                                <option value="GoPay">GoPay - 08123456789</option>
+                                <option value="Dana">Dana - 08123456789</option>
+                                <option value="ShopeePay">ShopeePay - 08123456789</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nomor E-Wallet Pengirim *</label>
+                            <input type="tel" id="ewalletNumber" placeholder="Contoh: 08123456789" pattern="08[0-9]{8,11}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Upload Bukti Pembayaran *</label>
+                            <input type="file" id="ewalletProof" accept="image/*" required>
+                            <small style="color: #666; font-size: 12px;">Screenshot konfirmasi pembayaran (Max 2MB)</small>
+                        </div>
+                    </div>
+
+                    <!-- Detail Kartu Kredit -->
+                    <div id="ccDetails" style="display: none;">
+                        <div class="payment-info-box">
+                            <p>💳 Pembayaran dengan Kartu Kredit akan diproses melalui payment gateway.</p>
+                            <p>Anda akan diarahkan ke halaman pembayaran setelah konfirmasi.</p>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-submit">Konfirmasi Pemesanan</button>
                 </form>
             `;
 
-            // Masukkan HTML ke modal dan tampilkan modal
             document.getElementById('modalBody').innerHTML = formHtml;
             document.getElementById('bookingModal').classList.add('active');
         }
 
-        // Fungsi untuk submit pemesanan
-        function submitBooking(e, eventId) {
-            e.preventDefault(); // Mencegah form reload halaman
+        // ========================================
+        // TOGGLE PAYMENT DETAILS
+        // ========================================
+        function togglePaymentDetails() {
+            const paymentMethod = document.getElementById('payment').value;
             
-            // Ambil data yang diperlukan
+            // Hide semua detail payment
+            document.getElementById('transferDetails').style.display = 'none';
+            document.getElementById('ewalletDetails').style.display = 'none';
+            document.getElementById('ccDetails').style.display = 'none';
+
+            // Hapus required dari semua field payment detail
+            ['bankDestination', 'accountName', 'accountNumber', 'paymentProof'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.removeAttribute('required');
+            });
+            ['ewalletType', 'ewalletNumber', 'ewalletProof'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.removeAttribute('required');
+            });
+
+            // Show detail sesuai metode yang dipilih
+            if (paymentMethod === 'transfer') {
+                document.getElementById('transferDetails').style.display = 'block';
+                ['bankDestination', 'accountName', 'accountNumber', 'paymentProof'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.setAttribute('required', 'required');
+                });
+            } else if (paymentMethod === 'ewallet') {
+                document.getElementById('ewalletDetails').style.display = 'block';
+                ['ewalletType', 'ewalletNumber', 'ewalletProof'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.setAttribute('required', 'required');
+                });
+            } else if (paymentMethod === 'cc') {
+                document.getElementById('ccDetails').style.display = 'block';
+            }
+        }
+
+        // ========================================
+        // SUBMIT BOOKING - SIMPAN KE LOCALSTORAGE
+        // ========================================
+        function submitBooking(e, eventId) {
+            e.preventDefault();
+            
+            // ambil data
             const event = events.find(ev => ev.id === eventId);
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             const payment = document.getElementById('payment').value;
             const ticketCount = ticketCounts[eventId];
             const totalPrice = event.price * ticketCount;
 
-            // Generate nomor booking unik
+            // Kumpulkan detail pembayaran
+            let paymentDetails = {
+                method: payment
+            };
+
+            // Jika Transfer Bank
+            if (payment === 'transfer') {
+                const bank = document.getElementById('bankDestination').value;
+                const accountName = document.getElementById('accountName').value;
+                const accountNumber = document.getElementById('accountNumber').value;
+                const proofFile = document.getElementById('paymentProof').files[0];
+
+                // Validasi file size (max 2MB)
+                if (proofFile && proofFile.size > 2 * 1024 * 1024) {
+                    alert('⚠️ Ukuran file terlalu besar! Maksimal 2MB');
+                    return;
+                }
+
+                // Simpan sebagai base64 (untuk simulasi, di production pakai server)
+                if (proofFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        paymentDetails.bank = bank;
+                        paymentDetails.accountName = accountName;
+                        paymentDetails.accountNumber = accountNumber;
+                        paymentDetails.proofImage = e.target.result;
+                        paymentDetails.proofFileName = proofFile.name;
+                        
+                        // Lanjutkan simpan booking
+                        saveBooking(event, currentUser, ticketCount, totalPrice, paymentDetails, eventId);
+                    };
+                    reader.readAsDataURL(proofFile);
+                    return; // Tunggu file upload selesai
+                }
+            }
+            // Jika E-Wallet
+            else if (payment === 'ewallet') {
+                const ewalletType = document.getElementById('ewalletType').value;
+                const ewalletNumber = document.getElementById('ewalletNumber').value;
+                const proofFile = document.getElementById('ewalletProof').files[0];
+
+                // Validasi file size
+                if (proofFile && proofFile.size > 2 * 1024 * 1024) {
+                    alert('⚠️ Ukuran file terlalu besar! Maksimal 2MB');
+                    return;
+                }
+
+                if (proofFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        paymentDetails.ewalletType = ewalletType;
+                        paymentDetails.ewalletNumber = ewalletNumber;
+                        paymentDetails.proofImage = e.target.result;
+                        paymentDetails.proofFileName = proofFile.name;
+                        
+                        saveBooking(event, currentUser, ticketCount, totalPrice, paymentDetails, eventId);
+                    };
+                    reader.readAsDataURL(proofFile);
+                    return;
+                }
+            }
+
+            // Jika Kartu Kredit (tidak perlu upload)
+            saveBooking(event, currentUser, ticketCount, totalPrice, paymentDetails, eventId);
+        }
+
+        // ========================================
+        // SAVE BOOKING TO LOCALSTORAGE
+        // ========================================
+        function saveBooking(event, currentUser, ticketCount, totalPrice, paymentDetails, eventId) {
+            // Generate booking number
             const bookingNumber = 'BK' + Date.now().toString().slice(-8);
+            const bookingDate = new Date().toLocaleString('id-ID');
+            const timestamp = Date.now();
 
-            // Label untuk metode pembayaran
-            const paymentLabel = payment === 'transfer' ? 'Transfer Bank' : 
-                                payment === 'ewallet' ? 'E-Wallet' : 'Kartu Kredit';
+            // ⭐ PENTING: Buat object booking
+            const newBooking = {
+                bookingNumber: bookingNumber,
+                timestamp: timestamp,
+                userId: currentUser.id,
+                userName: currentUser.name,
+                userEmail: currentUser.email,
+                userPhone: currentUser.phone,
+                eventId: event.id,
+                eventTitle: event.title,
+                eventDate: event.date,
+                eventLocation: event.location,
+                eventIcon: event.icon,
+                ticketCount: ticketCount,
+                pricePerTicket: event.price,
+                totalPrice: totalPrice,
+                paymentMethod: paymentDetails.method,
+                paymentDetails: paymentDetails, // Simpan detail pembayaran lengkap
+                bookingDate: bookingDate,
+                status: 'Pending' // Status: Pending, Lunas, Dibatalkan
+            };
+            
+            // ⭐ PENTING: Ambil data bookings yang sudah ada
+            let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+            
+            // ⭐ PENTING: Tambahkan booking baru
+            bookings.push(newBooking);
+            
+            // ⭐ PENTING: Simpan ke localStorage dengan key 'bookings'
+            localStorage.setItem('bookings', JSON.stringify(bookings));
 
-            // HTML untuk konfirmasi pemesanan berhasil
+            // Tampilkan konfirmasi
+            showBookingConfirmation(newBooking, currentUser, event, ticketCount, totalPrice, paymentDetails);
+        }
+
+        // ========================================
+        // SHOW BOOKING CONFIRMATION
+        // ========================================
+        function showBookingConfirmation(booking, currentUser, event, ticketCount, totalPrice, paymentDetails) {
+            const paymentLabel = getPaymentMethodLabel(paymentDetails);
+            let paymentInfo = '';
+
+            // Tambahkan info pembayaran detail
+            if (paymentDetails.method === 'transfer') {
+                paymentInfo = `
+                    <p><strong>Bank Tujuan:</strong> ${paymentDetails.bank}</p>
+                    <p><strong>Dari Rekening:</strong> ${paymentDetails.accountName} (${paymentDetails.accountNumber})</p>
+                    <p><strong>Bukti Transfer:</strong> ✅ Sudah diupload</p>
+                `;
+            } else if (paymentDetails.method === 'ewallet') {
+                paymentInfo = `
+                    <p><strong>E-Wallet:</strong> ${paymentDetails.ewalletType}</p>
+                    <p><strong>Nomor:</strong> ${paymentDetails.ewalletNumber}</p>
+                    <p><strong>Bukti Bayar:</strong> ✅ Sudah diupload</p>
+                `;
+            } else if (paymentDetails.method === 'cc') {
+                paymentInfo = `<p><strong>💳 Kartu Kredit</strong> - Menunggu verifikasi</p>`;
+            }
+
             const confirmationHtml = `
                 <div class="confirmation">
                     <div class="confirmation-icon">✅</div>
@@ -289,76 +741,81 @@
                     <p>Terima kasih telah memesan tiket</p>
                     
                     <div class="booking-details">
-                        <p><strong>No. Booking:</strong> ${bookingNumber}</p>
+                        <p><strong>No. Booking:</strong> ${booking.bookingNumber}</p>
                         <p><strong>Nama:</strong> ${currentUser.name}</p>
                         <p><strong>Email:</strong> ${currentUser.email}</p>
                         <p><strong>Event:</strong> ${event.title}</p>
                         <p><strong>Jumlah Tiket:</strong> ${ticketCount} tiket</p>
                         <p><strong>Total Bayar:</strong> Rp ${totalPrice.toLocaleString('id-ID')}</p>
                         <p><strong>Metode Pembayaran:</strong> ${paymentLabel}</p>
+                        ${paymentInfo}
+                        <p><strong>Status:</strong> <span style="color: #ffa502;">🟡 Menunggu Verifikasi</span></p>
                     </div>
 
-                    <p style="color: #666; font-size: 14px;">
-                        E-ticket akan dikirim ke email Anda dalam 5 menit.<br>
-                        Silakan lakukan pembayaran sesuai metode yang dipilih.
+                    <p style="color: #666; font-size: 14px; margin: 15px 0;">
+                        ${paymentDetails.method === 'cc' 
+                            ? 'Pembayaran Anda sedang diproses.<br>' 
+                            : 'Bukti pembayaran Anda akan diverifikasi dalam 1x24 jam.<br>'}
+                        E-ticket akan dikirim ke email setelah pembayaran dikonfirmasi.<br>
+                        Silakan cek di menu Riwayat untuk melihat detail pemesanan.
                     </p>
 
+                    <a href="riwayat.html" class="btn-submit" style="display: inline-block; text-decoration: none; margin-bottom: 10px;">
+                        📜 Lihat Riwayat Transaksi
+                    </a>
                     <button class="btn-close-modal" onclick="closeModalAndReset()">Tutup</button>
                 </div>
             `;
 
-            // Tampilkan konfirmasi
             document.getElementById('modalBody').innerHTML = confirmationHtml;
         }
 
         // ========================================
-        // FUNGSI MODAL
+        // GET PAYMENT METHOD LABEL
         // ========================================
-        
-        // Fungsi untuk tutup modal
+        function getPaymentMethodLabel(paymentDetails) {
+            if (paymentDetails.method === 'transfer') {
+                return `Transfer Bank (${paymentDetails.bank})`;
+            } else if (paymentDetails.method === 'ewallet') {
+                return `E-Wallet (${paymentDetails.ewalletType})`;
+            } else if (paymentDetails.method === 'cc') {
+                return 'Kartu Kredit';
+            }
+            return paymentDetails.method;
+        }
+
+        // ========================================
+        // MODAL FUNCTIONS
+        // ========================================
         function closeModal() {
             document.getElementById('bookingModal').classList.remove('active');
         }
 
-        // Fungsi untuk tutup modal dan reset jumlah tiket
         function closeModalAndReset() {
             closeModal();
-            
-            // Reset semua ticket count ke 0
             Object.keys(ticketCounts).forEach(key => {
                 ticketCounts[key] = 0;
             });
-            
-            // Render ulang tampilan event
             renderEvents();
         }
 
         // ========================================
-        // FUNGSI LOGOUT
+        // LOGOUT
         // ========================================
         function handleLogout() {
-            // Konfirmasi logout
             if (confirm('Yakin ingin logout?')) {
-                // Hapus data user yang sedang login dari localStorage
                 localStorage.removeItem('currentUser');
-                
-                // Redirect ke halaman login
                 window.location.href = 'index.html';
             }
         }
 
         // ========================================
-        // INISIALISASI SAAT HALAMAN LOAD
+        // INIT
         // ========================================
         window.onload = function() {
-            // Cek apakah user sudah login (proteksi halaman)
             const user = checkAuth();
-            
             if (user) {
-                // Tampilkan nama user di navbar
                 document.getElementById('userName').textContent = `Halo, ${user.name}! 👋`;
-                
-                // Render semua event cards
                 renderEvents();
             }
         };
