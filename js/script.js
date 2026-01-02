@@ -60,6 +60,44 @@ function hideAlert() {
 
 
 // ========================================
+// MOBILE MENU TOGGLE - BIAR KECE DI HP! 📱✨
+// ========================================
+/**
+ * Fungsi buat buka/tutup menu di mobile
+ * Dipanggil pas hamburger menu diklik
+ */
+function toggleMobileMenu() {
+    // Ambil element menu sama hamburger button
+    const navMenu = document.getElementById('navMenu');
+    const hamburger = document.querySelector('.hamburger-menu');
+    
+    // Toggle class 'show' buat munculin/sembunyiin menu
+    // Ini bikin animasi slide down yang smooth banget! 💫
+    navMenu.classList.toggle('show');
+    hamburger.classList.toggle('active');
+}
+
+// Otomatis tutup menu pas link diklik (biar ga ganggu)
+// Ini jalan pas kita udah di halaman yang dituju~
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            // Tutup menu mobile pas link diklik
+            const navMenu = document.getElementById('navMenu');
+            const hamburger = document.querySelector('.hamburger-menu');
+            
+            if (navMenu && navMenu.classList.contains('show')) {
+                navMenu.classList.remove('show');
+                hamburger.classList.remove('active');
+            }
+        });
+    });
+});
+
+
+// ========================================
 // LOCALSTORAGE HELPER FUNCTIONS
 // ========================================
 /**

@@ -8,14 +8,24 @@
 </head>
 <body class="dashboard-body">
     
-    <!-- Navbar -->
+    <!-- Navbar - yeayy udah responsive nih! 💕 -->
     <nav class="navbar">
         <div class="nav-container">
+            <!-- Logo & nama app (kiri banget) -->
             <div class="nav-brand">
                 <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img">
                 <h2>EventKu</h2>
             </div>
-            <div class="nav-menu">
+            
+            <!-- Hamburger menu buat mobile (biar kece) 🍔 -->
+            <button class="hamburger-menu" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <!-- Menu navigasi (bakal slide down di mobile) -->
+            <div class="nav-menu" id="navMenu">
                 <a href="dashboard.html" class="nav-link active">
                     <img src="images/home icon.png" alt="Home" class="nav-icon"> Home
                 </a>
@@ -26,6 +36,8 @@
                     <img src="images/profil icon.jpg" alt="Profil" class="nav-icon"> Profil
                 </a>
             </div>
+            
+            <!-- User info & tombol logout (kanan banget) -->
             <div class="nav-user">
                 <span id="userName">Loading...</span>
                 <button class="btn-logout" onclick="handleLogout()">Logout</button>
@@ -204,7 +216,71 @@
                 category: "teater",
                 icon: "🎭",
                 image: "images/teater.jpg"
+            },
+            {
+                id: 7,
+                title: "Theater Musical Laskar Pelangi",
+                date: "1 Juni 2025",
+                location: "Teater Jakarta",
+                price: 300000,
+                category: "teater",
+                icon: "🎭",
+                image: "images/jazz.jpeg"
+            },
+            {
+                id: 8,
+                title: "Theater Musical Laskar Pelangi",
+                date: "1 Juni 2025",
+                location: "Teater Jakarta",
+                price: 300000,
+                category: "teater",
+                icon: "🎭",
+                image: "images/line up.jpg"
+            },
+            {
+                id: 9,
+                title: "Theater Musical Laskar Pelangi",
+                date: "1 Juni 2025",
+                location: "Teater Jakarta",
+                price: 300000,
+                category: "teater",
+                icon: "🎭",
+                image: "images/music festival.jpeg"
+            },
+            {
+                id: 10,
+                title: "Theater Musical Laskar Pelangi",
+                date: "1 Juni 2025",
+                location: "Teater Jakarta",
+                price: 300000,
+                category: "teater",
+                icon: "🎭",
+                image: "images/hindiaa.jpeg"
+            },
+            {
+                id: 11,
+                title: "Deny Caknan Music",
+                date: "1 Juni 2025",
+                location: "Seven Dream City",
+                price: 300000,
+                category: "teater",
+                icon: "🎭",
+                image: "images/denycknan.jpeg"
+            },
+            {
+                id: 12,
+                title: "Aurora Music Festival",
+                date: "6 April 2026",
+                location: "Calrk Global City",
+                price: 260000,
+                category: "Music",
+                icon: "🎭",
+                image: "images/aurora.jpg"
             }
+
+
+
+
         ];
 
         // ========================================

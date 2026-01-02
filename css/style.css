@@ -984,11 +984,49 @@ body::before {
 
 /* ========================================
    NAVIGATION MENU
+   Menu navbar yang kece & modern! ✨
    ======================================== */
 
 .nav-menu {
     display: flex;
     gap: 8px;
+}
+
+/* Hamburger menu (cuma muncul di mobile aja ya~) 🍔 */
+.hamburger-menu {
+    display: none; /* di desktop ilang dulu */
+    flex-direction: column;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 1001;
+    transition: all 0.3s ease;
+}
+
+/* 3 garis di hamburger - biar cantik animasinya! */
+.hamburger-menu span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: #667eea;
+    border-radius: 3px;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Animasi kece pas di klik (jadi X gitu loh!) 🔄 */
+.hamburger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
 }
 
 .nav-link {
@@ -1673,23 +1711,28 @@ body::before {
 }
 
 /* ========================================
-   RESPONSIVE (Mobile)
+   RESPONSIVE (Mobile) - BIAR MAKIN KECE DI HP! 📱💕
+   Semua bakal rapi & cantik di layar kecil~
    ======================================== */
 
 @media (max-width: 768px) {
+    /* Badan halaman jangan terlalu lebar paddingnya */
     body {
         padding: 10px;
     }
 
+    /* Form login/register biar pas di mobile */
     .auth-container {
         padding: 36px 24px;
         margin: 20px auto;
     }
 
+    /* Logo jangan kegedean biar cute */
     .logo h1 {
         font-size: 36px;
     }
 
+    /* Header dashboard lebih kecil dikit */
     .dashboard-header {
         padding: 32px 24px;
     }
@@ -1698,77 +1741,203 @@ body::before {
         font-size: 28px;
     }
 
+    /* Grid event jadi 1 kolom aja biar rapi */
     .events-grid {
         grid-template-columns: 1fr;
     }
 
+    /* Stats riwayat juga 1 kolom ya~ */
     .history-stats {
         grid-template-columns: 1fr;
     }
 
+    /* Info transaksi & detail tiket jadi 1 kolom */
     .transaction-info,
     .ticket-details-grid {
         grid-template-columns: 1fr;
     }
 
+    /* ==== NAVBAR RESPONSIVE - INI YANG PENTING BANGET! ==== */
+    
+    /* Container navbar jadi vertikal di mobile */
     .nav-container {
-        flex-direction: column;
-        gap: 12px;
+        flex-wrap: wrap; /* biar bisa turun kebawah */
+        justify-content: space-between;
         padding: 16px;
+        position: relative;
     }
 
+    /* Brand (logo + nama) tetep di atas kiri */
+    .nav-brand {
+        order: 1;
+        flex: 1;
+    }
+
+    /* Hamburger menu muncul di atas kanan! */
+    .hamburger-menu {
+        display: flex; /* munculin hamburger di mobile */
+        order: 2;
+    }
+
+    /* Menu navigasi - ini yang paling penting nih! 🌟 */
     .nav-menu {
-        flex-direction: column;
+        order: 4; /* taruh di paling bawah */
         width: 100%;
+        flex-direction: column;
         gap: 8px;
+        max-height: 0; /* awalnya sembunyi */
+        overflow: hidden;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        margin-top: 0;
     }
 
+    /* Pas hamburger di klik, menu muncul dengan animasi smooth! ✨ */
+    .nav-menu.show {
+        max-height: 300px; /* muncul dengan slide down */
+        opacity: 1;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 2px solid rgba(102, 126, 234, 0.1);
+    }
+
+    /* Link navigasi jadi full width & center */
     .nav-link {
         width: 100%;
-        text-align: center;
+        justify-content: center;
+        padding: 14px 20px;
     }
 
+    /* User info (nama + logout) di atas tengah */
     .nav-user {
+        order: 3;
         width: 100%;
         justify-content: space-between;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 2px solid rgba(102, 126, 234, 0.1);
     }
 
+    /* Tombol logout lebih kecil di mobile */
+    .btn-logout {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    /* ==== END NAVBAR RESPONSIVE ==== */
+
+    /* Ticket header jadi vertikal */
     .ticket-header {
         flex-direction: column;
         gap: 16px;
         text-align: center;
     }
 
+    /* QR code section jadi vertikal */
     .ticket-qr-section {
         flex-direction: column;
         text-align: center;
     }
 
+    /* Semua tombol jadi full width biar gampang di klik */
     .btn-detail, .btn-pay, .btn-cancel, .btn-download {
         width: 100%;
     }
 
+    /* Filter jadi 1 kolom biar ga sempit */
     .filter-controls {
         grid-template-columns: 1fr;
     }
 
+    /* Profile grid jadi 1 kolom (atas-bawah) - penting banget ini! */
     .profile-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important; /* paksa 1 kolom */
+        gap: 16px;
     }
 
+    /* Profile card padding lebih kecil biar ga makan tempat */
+    .profile-card {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+
+    /* Profile header jadi vertikal kalo kepanjangan */
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+
+    /* Avatar lebih kecil di mobile */
+    .profile-avatar {
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 32px !important;
+    }
+
+    /* Detail item jadi vertikal biar lebih jelas */
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 12px 0;
+    }
+
+    .detail-value {
+        text-align: left;
+        word-break: break-word; /* biar teks panjang ga overflow */
+    }
+
+    /* Form di profile juga lebih compact */
+    .profile-forms {
+        gap: 16px;
+    }
+
+    .profile-forms .profile-card h3 {
+        font-size: 16px;
+    }
+
+    /* Modal content jangan terlalu lebar paddingnya */
     .modal-content {
         padding: 28px 20px;
+        max-width: 95%; /* kasih ruang dikit di samping */
+        margin: 20px auto;
+    }
+
+    /* Event card biar lebih compact di mobile */
+    .event-card {
+        margin-bottom: 16px;
+    }
+
+    /* Form group spacing lebih rapat */
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    /* Button submit jangan terlalu gede */
+    .btn-submit {
+        padding: 14px;
+        font-size: 15px;
     }
 }
 
 /* ========================================
    PROFILE PAGE STYLING
+   Styling buat halaman profile - cantik & modern! 💜
    ======================================== */
 
 .profile-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* default 2 kolom di desktop */
     gap: 28px;
+}
+
+/* Khusus profile, bikin 1 kolom lebih cepet (< 900px) biar ga sempit! */
+@media (max-width: 900px) {
+    .profile-grid {
+        grid-template-columns: 1fr !important; /* paksa jadi 1 kolom */
+        gap: 20px;
+    }
 }
 
 .profile-card {
@@ -1923,3 +2092,143 @@ body::before {
     pointer-events: none;
     z-index: 9999;
 }
+
+/* ========================================
+   RESPONSIVE TABLET (iPad & sejenisnya) 📱
+   Biar di tablet juga kece & ga aneh~
+   ======================================== */
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    /* Event grid jadi 2 kolom aja di tablet */
+    .events-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    /* Profile grid tetep 2 kolom tapi lebih rapet */
+    .profile-grid {
+        gap: 20px;
+    }
+
+    /* Container navbar lebih compact */
+    .nav-container {
+        padding: 16px 24px;
+    }
+
+    /* Nav link agak lebih kecil paddingnya */
+    .nav-link {
+        padding: 10px 18px;
+        font-size: 14px;
+    }
+
+    /* Filter controls jadi 2 kolom biar ga terlalu panjang */
+    .filter-controls {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ========================================
+   RESPONSIVE SMALL MOBILE (HP kecil) 📱
+   Untuk layar HP yang mini banget (< 480px)
+   ======================================== */
+
+@media (max-width: 480px) {
+    /* Logo lebih kecil lagi */
+    .logo h1 {
+        font-size: 28px;
+    }
+
+    .logo-img-auth {
+        width: 60px;
+        height: 60px;
+    }
+
+    /* Header dashboard lebih compact */
+    .dashboard-header h1 {
+        font-size: 24px;
+    }
+
+    .dashboard-header p {
+        font-size: 14px;
+    }
+
+    /* Event card lebih kecil */
+    .event-card {
+        padding: 16px;
+    }
+
+    /* Button agak lebih kecil biar ga menuhin layar */
+    .btn-submit,
+    .btn-logout,
+    .btn-detail,
+    .btn-pay {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    /* Modal jadi full screen hampir */
+    .modal-content {
+        max-width: 100%;
+        margin: 10px;
+        padding: 20px 16px;
+    }
+
+    /* Form input lebih compact */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    /* Profile card padding lebih kecil lagi di HP mini */
+    .profile-card {
+        padding: 20px 16px;
+    }
+
+    /* Profile info text lebih kecil */
+    .profile-info h2 {
+        font-size: 20px;
+    }
+
+    .profile-info p {
+        font-size: 13px;
+    }
+
+    /* Detail item text lebih kecil */
+    .detail-label,
+    .detail-value {
+        font-size: 13px;
+    }
+
+    /* Nav brand (logo + text) lebih compact */
+    .nav-brand h2 {
+        font-size: 18px;
+    }
+
+    .logo-img {
+        width: 35px;
+        height: 35px;
+    }
+    }
+
+    /* Profile card padding lebih kecil */
+    .profile-card {
+        padding: 20px;
+    }
+
+    /* Nav user spacing */
+    .nav-user {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .nav-user span {
+        text-align: center;
+    }
+
+    .btn-logout {
+        width: 100%;
+    }
+

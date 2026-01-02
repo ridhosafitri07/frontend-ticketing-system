@@ -18,14 +18,24 @@
 </head>
 <body class="dashboard-body">
     
-    <!-- Navbar -->
+    <!-- Navbar - responsive & cute banget nih! 🌸 -->
     <nav class="navbar">
         <div class="nav-container">
+            <!-- Logo & nama app (kiri banget) -->
             <div class="nav-brand">
                 <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img">
                 <h2>EventKu</h2>
             </div>
-            <div class="nav-menu">
+            
+            <!-- Hamburger menu buat mobile (biar gampang navigasinya) 🍔✨ -->
+            <button class="hamburger-menu" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <!-- Menu navigasi (bakal slide down di mobile) -->
+            <div class="nav-menu" id="navMenu">
                 <a href="dashboard.html" class="nav-link">
                     <img src="images/home icon.png" alt="Home" class="nav-icon"> Home
                 </a>
@@ -36,6 +46,8 @@
                     <img src="images/profil icon.jpg" alt="Profil" class="nav-icon"> Profil
                 </a>
             </div>
+            
+            <!-- User info & tombol logout (kanan banget) -->
             <div class="nav-user">
                 <span id="userName">Loading...</span>
                 <button class="btn-logout" onclick="handleLogout()">Logout</button>
