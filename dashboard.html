@@ -13,7 +13,7 @@
         <div class="nav-container">
             <!-- Logo & nama app (kiri banget) -->
             <div class="nav-brand">
-                <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img">
+                <img src="images/logo tiket.png" alt="EventKu Logo" class="logo-img">
                 <h2>EventKu</h2>
             </div>
             
@@ -58,7 +58,15 @@
              FILTER & SEARCH SECTION
              Section untuk cari & filter event
              ======================================== -->
-        <div class="filter-search-section">
+        
+        <!-- Toggle Filter Button (Mobile Only) -->
+        <button class="btn-toggle-filter" onclick="toggleFilter()">
+            <span class="filter-icon">🎛️</span>
+            <span class="filter-text">Filter & Cari Event</span>
+            <span class="filter-arrow" id="filterArrow">▼</span>
+        </button>
+        
+        <div class="filter-search-section" id="filterSection">
             
             <!-- Search Bar -->
             <div class="search-box">
@@ -480,6 +488,24 @@
             }
 
             return sorted;
+        }
+
+        /**
+         * TOGGLE FILTER (MOBILE)
+         * Show/hide filter section di mobile
+         */
+        function toggleFilter() {
+            const filterSection = document.getElementById('filterSection');
+            const filterArrow = document.getElementById('filterArrow');
+            
+            filterSection.classList.toggle('show');
+            
+            // Ubah arrow direction
+            if (filterSection.classList.contains('show')) {
+                filterArrow.textContent = '▲';
+            } else {
+                filterArrow.textContent = '▼';
+            }
         }
 
         /**

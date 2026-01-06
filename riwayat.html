@@ -836,21 +836,26 @@
             if (!booking.paymentDetails) return '';
 
             const details = booking.paymentDetails;
-            let html = '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">';
-            html += '<h5 style="color: #667eea; margin-bottom: 10px;">Detail Pembayaran:</h5>';
+            let html = '<div class="payment-details-box">';
+            html += '<h5>💳 Detail Pembayaran</h5>';
 
             if (details.method === 'transfer' && details.bank) {
                 html += '<div class="detail-grid">';
                 html += `<div class="detail-item"><span>Bank Tujuan:</span><strong>${details.bank}</strong></div>`;
                 html += `<div class="detail-item"><span>Nama Pengirim:</span><strong>${details.accountName}</strong></div>`;
                 html += `<div class="detail-item"><span>No. Rekening:</span><strong>${details.accountNumber}</strong></div>`;
+                if (details.uploadedAt) {
+                    html += `<div class="detail-item"><span>Waktu Upload:</span><strong>${details.uploadedAt}</strong></div>`;
+                }
                 if (details.proofImage) {
                     html += `<div class="detail-item" style="grid-column: 1 / -1;">
-                        <span>Bukti Transfer:</span><br>
-                        <img src="${details.proofImage}" alt="Bukti Transfer" 
-                             style="max-width: 100%; max-height: 300px; margin-top: 10px; border-radius: 8px; border: 1px solid #e0e0e0; cursor: pointer;"
-                             onclick="window.open(this.src, '_blank')">
-                        <br><small style="color: #666;">Klik untuk memperbesar</small>
+                        <span>Bukti Transfer:</span>
+                        <div class="payment-proof-image">
+                            <img src="${details.proofImage}" alt="Bukti Transfer" 
+                                 onclick="window.open(this.src, '_blank')" 
+                                 style="cursor: pointer; width: 100%; height: auto; display: block;">
+                        </div>
+                        <small style="color: #78350F; display: block; margin-top: 8px; text-align: center;">📸 Klik untuk memperbesar</small>
                     </div>`;
                 }
                 html += '</div>';
@@ -858,18 +863,23 @@
                 html += '<div class="detail-grid">';
                 html += `<div class="detail-item"><span>E-Wallet:</span><strong>${details.ewalletType}</strong></div>`;
                 html += `<div class="detail-item"><span>Nomor:</span><strong>${details.ewalletNumber}</strong></div>`;
+                if (details.uploadedAt) {
+                    html += `<div class="detail-item"><span>Waktu Upload:</span><strong>${details.uploadedAt}</strong></div>`;
+                }
                 if (details.proofImage) {
                     html += `<div class="detail-item" style="grid-column: 1 / -1;">
-                        <span>Bukti Pembayaran:</span><br>
-                        <img src="${details.proofImage}" alt="Bukti Pembayaran" 
-                             style="max-width: 100%; max-height: 300px; margin-top: 10px; border-radius: 8px; border: 1px solid #e0e0e0; cursor: pointer;"
-                             onclick="window.open(this.src, '_blank')">
-                        <br><small style="color: #666;">Klik untuk memperbesar</small>
+                        <span>Bukti Pembayaran:</span>
+                        <div class="payment-proof-image">
+                            <img src="${details.proofImage}" alt="Bukti Pembayaran" 
+                                 onclick="window.open(this.src, '_blank')" 
+                                 style="cursor: pointer; width: 100%; height: auto; display: block;">
+                        </div>
+                        <small style="color: #78350F; display: block; margin-top: 8px; text-align: center;">📸 Klik untuk memperbesar</small>
                     </div>`;
                 }
                 html += '</div>';
             } else if (details.method === 'cc') {
-                html += '<p style="color: #666;">💳 Pembayaran via Kartu Kredit</p>';
+                html += '<p style="color: #78350F; font-weight: 600;">💳 Pembayaran via Kartu Kredit</p>';
             }
 
             html += '</div>';
@@ -878,9 +888,9 @@
 
         function getStatusColor(status) {
             const colors = {
-                'Pending': '#ffa502',
-                'Lunas': '#26de81',
-                'Dibatalkan': '#fc5c65'
+                'Pending': 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)',
+                'Lunas': 'linear-gradient(135deg, #34D399 0%, #10B981 100%)',
+                'Dibatalkan': 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)'
             };
             return colors[status] || '#999';
         }

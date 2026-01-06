@@ -4,36 +4,462 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - EventKu</title>
-    <!-- Link ke file CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0F172A;
+            height: 100vh;  /* exact height viewport */
+            padding: 0;  /* hapus padding */
+            margin: 0;
+            color: #F1F5F9;
+            position: relative;
+            overflow: hidden;  /* ga ada scroll */
+            display: flex;  /* flexbox buat center */
+            align-items: center;  /* center vertikal */
+            justify-content: center;  /* center horizontal */
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(5%, 5%) rotate(120deg); }
+            66% { transform: translate(-5%, 5%) rotate(240deg); }
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 15% 30%, rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 85% 70%, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #7C3AED;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            animation: float-particle 20s linear infinite;
+            box-shadow: 0 0 10px #7C3AED;
+        }
+
+        @keyframes float-particle {
+            0% {
+                opacity: 0;
+                transform: translateY(100vh) translateX(0);
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) translateX(100px);
+            }
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 30%; animation-delay: 5s; }
+        .particle:nth-child(3) { left: 50%; animation-delay: 10s; background: #EC4899; box-shadow: 0 0 10px #EC4899; }
+        .particle:nth-child(4) { left: 70%; animation-delay: 15s; }
+        .particle:nth-child(5) { left: 90%; animation-delay: 7s; background: #EC4899; box-shadow: 0 0 10px #EC4899; }
+
+        /* Alert Box Styling */
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 320px;
+            max-width: 500px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            display: none;
+            animation: slideDown 0.3s;
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6EE7B7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #FCA5A5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .auth-container {
+            max-width: 420px;  /* lebih kecil lagi */
+            width: 90%;  /* responsive */
+            margin: 0 auto;  /* ga ada margin atas bawah */
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 18px 30px;  /* super compact dari 24px */
+            border-radius: 24px;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            box-shadow: 0 0 40px rgba(124, 58, 237, 0.2),
+                        0 20px 60px rgba(0, 0, 0, 0.4),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 96vh;  /* max height lebih besar dikit */
+            overflow-y: auto;  /* kalo terlalu panjang scroll dalem aja */
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-container:hover {
+            border-color: rgba(236, 72, 153, 0.3);
+            box-shadow: 0 0 60px rgba(236, 72, 153, 0.3),
+                        0 20px 60px rgba(0, 0, 0, 0.4),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;  /* lebih kecil dari 16px */
+        }
+
+        /* Logo - clean tanpa animasi */
+        .logo-img-auth {
+            width: 70px;  /* lebih kecil dari 80px */
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 8px;  /* kurangin spacing */
+        }
+
+        .logo h1 {
+            background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 28px;  /* lebih kecil dari 32px */
+            margin-bottom: 2px;  /* super kecil */
+            font-weight: 800;
+            letter-spacing: -1px;
+            filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.3));
+        }
+
+        .logo p {
+            color: #94A3B8;
+            font-size: 12px;  /* lebih kecil dari 13px */
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+
+        .info-box {
+            background: rgba(124, 58, 237, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            padding: 8px 10px;  /* super kecil */
+            border-radius: 10px;
+            margin-bottom: 10px;  /* kurangin dari 14px */
+            font-size: 11px;  /* super kecil */
+            color: #C4B5FD;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .info-box::before {
+            content: "ℹ️";
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .form-card h2 {
+            color: #F1F5F9;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;  /* super kecil dari 14px */
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;  /* super kecil dari 6px */
+            color: #F1F5F9;
+            font-weight: 600;
+            font-size: 12px;  /* lebih kecil dari 13px */
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            z-index: 1;
+            filter: grayscale(1) brightness(0.7);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px 10px 42px;  /* super kecil dari 12px */
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            border-radius: 12px;
+            font-size: 13px;  /* lebih kecil dari 14px */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            color: #F1F5F9;
+        }
+
+        .form-group input::placeholder {
+            color: #64748B;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #EC4899;
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15),
+                        0 0 20px rgba(236, 72, 153, 0.3);
+            background: rgba(15, 23, 42, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .form-group input:focus + .input-icon {
+            filter: grayscale(0) brightness(1);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            user-select: none;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 11px;  /* lebih kecil dari 13px */
+            background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;  /* lebih kecil dari 15px */
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4),
+                        0 0 30px rgba(124, 58, 237, 0.3);
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 4px;  /* kurangin dari 6px */
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(236, 72, 153, 0.6),
+                        0 0 40px rgba(124, 58, 237, 0.5);
+            background: linear-gradient(135deg, #8B5CF6 0%, #F472B6 100%);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6EE7B7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #FCA5A5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #94A3B8;
+            font-size: 14px;
+        }
+
+        .form-footer a {
+            color: #EC4899;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+        }
+
+        .form-footer a:hover {
+            color: #F472B6;
+            text-decoration: underline;
+            text-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                padding: 20px;  /* lebih compact di mobile */
+                margin: 0;  /* ga ada margin */
+                max-height: 98vh;  /* hampir full screen */
+            }
+
+            .logo h1 {
+                font-size: 28px;  /* lebih kecil di mobile */
+            }
+            
+            .form-group {
+                margin-bottom: 12px;  /* lebih rapat di mobile */
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Container utama untuk form register -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+
+    <!-- Alert Box -->
+    <div id="alertBox" class="alert"></div>
+
     <div class="auth-container">
-        
-        <!-- Logo website -->
         <div class="logo">
-            <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img-auth">
+            <img src="images/logo tiket.png" alt="EventKu Logo" class="logo-img-auth">
             <h1>EventKu</h1>
             <p>Pesan Tiket Event & Konser Favoritmu</p>
         </div>
 
-        <!-- Info box -->
-        <div class="info-box">
-            ℹ️ Demo Mode: Data disimpan sementara di browser
-        </div>
 
-        <!-- Alert box untuk pesan -->
-        <div id="alertBox" class="alert"></div>
-
-        <!-- Form Register -->
         <div class="form-card">
             <h2>Daftar Akun</h2>
             
-            <!-- Form dengan event onsubmit untuk handle register -->
             <form onsubmit="handleRegister(event)">
-                
-                <!-- Input Nama Lengkap -->
                 <div class="form-group">
                     <label>Nama Lengkap</label>
                     <div class="input-wrapper">
@@ -46,7 +472,6 @@
                     </div>
                 </div>
 
-                <!-- Input Email -->
                 <div class="form-group">
                     <label>Email</label>
                     <div class="input-wrapper">
@@ -59,7 +484,6 @@
                     </div>
                 </div>
 
-                <!-- Input No. Telepon -->
                 <div class="form-group">
                     <label>No. Telepon</label>
                     <div class="input-wrapper">
@@ -72,7 +496,6 @@
                     </div>
                 </div>
 
-                <!-- Input Password -->
                 <div class="form-group">
                     <label>Password</label>
                     <div class="input-wrapper">
@@ -87,7 +510,6 @@
                     </div>
                 </div>
 
-                <!-- Input Konfirmasi Password -->
                 <div class="form-group">
                     <label>Konfirmasi Password</label>
                     <div class="input-wrapper">
@@ -101,11 +523,9 @@
                     </div>
                 </div>
 
-                <!-- Tombol Submit Register -->
                 <button type="submit" class="btn-submit">Daftar</button>
             </form>
 
-            <!-- Link ke halaman login -->
             <div class="form-footer">
                 Sudah punya akun? 
                 <a href="index.html">Login di sini</a>
@@ -113,72 +533,68 @@
         </div>
     </div>
 
-    <!-- Link ke file JavaScript -->
-    <script src="js/script.js"></script>
-    
-    <!-- JavaScript khusus untuk halaman register -->
     <script>
-        // Fungsi untuk handle proses register
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
         function handleRegister(event) {
-            event.preventDefault(); // Mencegah form reload halaman
+            event.preventDefault();
             
-            // Ambil semua value dari input
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
             const phone = document.getElementById('regPhone').value;
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
             
-            // Validasi: Cek apakah password dan konfirmasi password sama
             if (password !== confirmPassword) {
                 showAlert('❌ Password tidak sama!', 'error');
-                return; // Stop proses jika password tidak sama
+                return;
             }
             
-            // Ambil data users yang sudah ada dari localStorage
             let users = JSON.parse(localStorage.getItem('users')) || [];
             
-            // Cek apakah email sudah pernah didaftarkan
             const emailExists = users.some(user => user.email === email);
             if (emailExists) {
                 showAlert('❌ Email sudah terdaftar!', 'error');
-                return; // Stop proses jika email sudah ada
+                return;
             }
             
-            // Buat object user baru dengan data dari form
             const newUser = {
-                id: Date.now(), // ID unik menggunakan timestamp
+                id: Date.now(),
                 name: name,
                 email: email,
                 phone: phone,
                 password: password,
-                registeredAt: new Date().toLocaleString('id-ID') // Tanggal daftar
+                registeredAt: new Date().toLocaleString('id-ID')
             };
             
-            // Tambahkan user baru ke array users
             users.push(newUser);
-            
-            // Simpan kembali ke localStorage
             localStorage.setItem('users', JSON.stringify(users));
             
-            // Tampilkan pesan sukses
             showAlert('✅ Registrasi berhasil! Redirecting ke login...', 'success');
             
-            // Reset semua input form
             document.getElementById('regName').value = '';
             document.getElementById('regEmail').value = '';
             document.getElementById('regPhone').value = '';
             document.getElementById('regPassword').value = '';
             document.getElementById('regConfirmPassword').value = '';
             
-            // Redirect ke halaman login setelah 2 detik
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 2000);
         }
 
-        // Cek apakah user sudah login
-        // Kalau sudah login, redirect ke dashboard
         window.onload = function() {
             const currentUser = localStorage.getItem('currentUser');
             if (currentUser) {

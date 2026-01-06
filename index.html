@@ -4,37 +4,423 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - EventKu</title>
-    <!-- Link ke file CSS eksternal -->
-    <link rel="stylesheet" href="css/style.css">
-    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0F172A;
+            height: 100vh;  /* exact height viewport */
+            padding: 0;  /* hapus padding biar full */
+            margin: 0;
+            color: #F1F5F9;
+            position: relative;
+            overflow: hidden;  /* ga ada scroll */
+            display: flex;  /* flexbox buat center */
+            align-items: center;  /* center vertikal */
+            justify-content: center;  /* center horizontal */
+        }
+
+        /* Animated background gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(5%, 5%) rotate(120deg); }
+            66% { transform: translate(-5%, 5%) rotate(240deg); }
+        }
+
+        /* Subtle noise texture */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 15% 30%, rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 85% 70%, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #7C3AED;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            animation: float-particle 20s linear infinite;
+            box-shadow: 0 0 10px #7C3AED;
+        }
+
+        @keyframes float-particle {
+            0% {
+                opacity: 0;
+                transform: translateY(100vh) translateX(0);
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) translateX(100px);
+            }
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 30%; animation-delay: 5s; }
+        .particle:nth-child(3) { left: 50%; animation-delay: 10s; background: #EC4899; box-shadow: 0 0 10px #EC4899; }
+        .particle:nth-child(4) { left: 70%; animation-delay: 15s; }
+        .particle:nth-child(5) { left: 90%; animation-delay: 7s; background: #EC4899; box-shadow: 0 0 10px #EC4899; }
+
+        .auth-container {
+            max-width: 440px;  /* sedikit lebih kecil */
+            width: 90%;  /* responsive */
+            margin: 0 auto;  /* ga ada margin atas bawah */
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 30px 40px;  /* kurangin padding dari 50px */
+            border-radius: 24px;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            box-shadow: 0 0 40px rgba(124, 58, 237, 0.2),
+                        0 20px 60px rgba(0, 0, 0, 0.4),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 95vh;  /* max height biar ga overflow */
+            overflow-y: auto;  /* kalo terlalu panjang baru scroll dalem */
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Glow effect on hover */
+        .auth-container:hover {
+            border-color: rgba(236, 72, 153, 0.3);
+            box-shadow: 0 0 60px rgba(236, 72, 153, 0.3),
+                        0 20px 60px rgba(0, 0, 0, 0.4),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;  /* kurangin dari 35px */
+        }
+
+        /* Logo - clean & simple tanpa animasi ✨ */
+        .logo-img-auth {
+            width: 90px;  /* kurangin dari 120px biar lebih compact */
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 12px;  /* kurangin spacing */
+        }
+
+        .logo h1 {
+            background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 36px;  /* kurangin dari 42px */
+            margin-bottom: 6px;  /* kurangin spacing */
+            font-weight: 800;
+            letter-spacing: -1px;
+            filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.3));
+        }
+
+        .logo p {
+            color: #94A3B8;
+            font-size: 14px;  /* kurangin dari 15px */
+            font-weight: 500;
+            margin-bottom: 0;  /* hapus margin bawah */
+        }
+
+        .info-box {
+            background: rgba(124, 58, 237, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            padding: 12px 14px;  /* kurangin padding */
+            border-radius: 12px;
+            margin-bottom: 16px;  /* kurangin dari 24px */
+            font-size: 13px;
+            color: #C4B5FD;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .info-box::before {
+            content: "ℹ️";
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .form-card h2 {
+            color: #F1F5F9;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;  /* kurangin dari 20px */
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;  /* kurangin dari 8px */
+            color: #F1F5F9;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            z-index: 1;
+            filter: grayscale(1) brightness(0.7);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 16px 15px 48px;
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            border-radius: 14px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            color: #F1F5F9;
+        }
+
+        .form-group input::placeholder {
+            color: #64748B;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #EC4899;
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15),
+                        0 0 20px rgba(236, 72, 153, 0.3);
+            background: rgba(15, 23, 42, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .form-group input:focus + .input-icon {
+            filter: grayscale(0) brightness(1);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            user-select: none;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;  /* kurangin dari 16px */
+            background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 8px;  /* kasih spacing dikit */
+            box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4),
+                        0 0 30px rgba(124, 58, 237, 0.3);
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(236, 72, 153, 0.6),
+                        0 0 40px rgba(124, 58, 237, 0.5);
+            background: linear-gradient(135deg, #8B5CF6 0%, #F472B6 100%);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 320px;
+            max-width: 500px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            display: none;
+            animation: slideDown 0.3s;
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6EE7B7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #FCA5A5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #94A3B8;
+            font-size: 14px;
+        }
+
+        .form-footer a {
+            color: #EC4899;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+        }
+
+        .form-footer a:hover {
+            color: #F472B6;
+            text-decoration: underline;
+            text-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                padding: 36px 24px;
+                margin: 20px auto;
+            }
+
+            .logo h1 {
+                font-size: 36px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Container utama untuk form login -->
+    <!-- Floating particles -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+
+    <!-- Alert Box -->
+    <div id="alertBox" class="alert"></div>
+
     <div class="auth-container">
-        
-        <!-- Logo dan judul website -->
         <div class="logo">
-            <img src="images/logo tiket.jpg" alt="EventKu Logo" class="logo-img-auth">
+            <img src="images/logo tiket.png" alt="EventKu Logo" class="logo-img-auth">
             <h1>EventKu</h1>
             <p>Pesan Tiket Event & Konser Favoritmu</p>
         </div>
 
-        <!-- Info box untuk memberitahu user ini adalah demo mode -->
-        <div class="info-box">
-            ℹ️ Demo Mode: Data disimpan sementara di browser
-        </div>
 
-        <!-- Alert box untuk menampilkan pesan error/success -->
-        <div id="alertBox" class="alert"></div>
-
-        <!-- Form Login -->
         <div class="form-card">
             <h2>Login</h2>
             
-            <!-- Form dengan event onsubmit untuk handle login -->
             <form onsubmit="handleLogin(event)">
-                
-                <!-- Input Email -->
                 <div class="form-group">
                     <label>Email</label>
                     <div class="input-wrapper">
@@ -47,7 +433,6 @@
                     </div>
                 </div>
 
-                <!-- Input Password -->
                 <div class="form-group">
                     <label>Password</label>
                     <div class="input-wrapper">
@@ -57,66 +442,57 @@
                             id="loginPassword" 
                             placeholder="Masukkan password" 
                             required>
-                        <!-- Icon mata untuk show/hide password -->
                         <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
                     </div>
                 </div>
 
-                <!-- Tombol Submit Login -->
                 <button type="submit" class="btn-submit">Login</button>
             </form>
 
-            <!-- Link ke halaman register -->
             <div class="form-footer">
                 Belum punya akun? 
                 <a href="register.html">Daftar sekarang</a>
-                
+                <br><br>
+                <a href="forgot-password.html">Lupa Password?</a>
             </div>
-            <a href="forgot-password.html">Lupa Password?</a>
         </div>
     </div>
 
-
-    <!-- Link ke file JavaScript eksternal -->
-    <script src="js/script.js"></script>
-    
-    <!-- JavaScript khusus untuk halaman login -->
     <script>
-        // Fungsi untuk handle proses login
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
         function handleLogin(event) {
-            event.preventDefault(); // Mencegah form submit default (reload halaman)
+            event.preventDefault();
             
-            // Ambil value dari input email dan password
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
-            // Ambil data users dari localStorage (database sementara di browser)
             const users = JSON.parse(localStorage.getItem('users')) || [];
-            
-            // Cari user yang emailnya dan passwordnya cocok
             const user = users.find(u => u.email === email && u.password === password);
             
-            // Cek apakah user ditemukan
             if (user) {
-                // Login berhasil!
-                // Simpan data user yang sedang login ke localStorage
                 localStorage.setItem('currentUser', JSON.stringify(user));
-                
-                // Tampilkan pesan sukses
                 showAlert(`✅ Login berhasil! Selamat datang ${user.name}`, 'success');
-                
-                // Redirect ke dashboard setelah 1 detik
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1000);
             } else {
-                // Login gagal - email atau password salah
                 showAlert('❌ Email atau password salah!', 'error');
             }
         }
 
-        // Cek apakah user sudah login sebelumnya
-        // Kalau sudah login, langsung redirect ke dashboard
         window.onload = function() {
             const currentUser = localStorage.getItem('currentUser');
             if (currentUser) {
